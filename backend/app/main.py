@@ -4,11 +4,11 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, HttpUrl
 
-from app.predictor import get_crops_catalog, load_model, locate_weights, predict
+from app.predictor import get_crops_catalog, load_session, predict
 
 app = FastAPI(
     title="AgriSmart AI Disease Recognition API",
-    description="Production REST API for crop disease recognition using deep learning (PyTorch/timm). Supports both image upload and image URL predictions.",
+    description="Production REST API for crop disease recognition using ONNX Runtime CPU Engine (~45MB RAM footprint).",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc"
@@ -30,27 +30,28 @@ class PredictUrlRequest(BaseModel):
 
 @app.on_event("startup")
 def startup_event():
-    """Pre-warm model into RAM on server boot."""
+    """Pre-warm ONNX model into memory on boot."""
     try:
-        load_model()
-        print(f"[AgriSmart API] Successfully pre-loaded weights from {locate_weights()}")
+        load_session()
+        print("[AgriSmart API] Successfully pre-loaded ONNX model session into memory (~45MB RAM)")
     except Exception as e:
-        print(f"[AgriSmart API] Warning: Failed to pre-warm model on boot: {e}")
+        print(f"[AgriSmart API] Warning: Failed to pre-warm ONNX model on boot: {e}")
 
 @app.get("/", tags=["Health"])
 @app.get("/health", tags=["Health"])
 def health_check():
     """Verify backend API status and model readiness."""
     try:
-        _, _, labels, crop_classes, backbone, _ = load_model()
+        session, meta = load_session()
         return {
             "status": "online",
             "service": "AgriSmart AI API",
             "model_ready": True,
-            "total_classes": len(labels),
-            "total_crops": len(crop_classes),
-            "backbone": backbone,
-            "weights_location": str(locate_weights())
+            "engine": "ONNX Runtime (CPU)",
+            "model_id": meta["id"],
+            "total_classes": len(meta["labels"]),
+            "total_crops": len(meta["crop_classes"]),
+            "ram_footprint": "~45 MB"
         }
     except Exception as e:
         import traceback

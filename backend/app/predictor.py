@@ -1,96 +1,96 @@
-"""PyTorch Model Predictor Engine for AgriSmart Backend."""
+"""Ultra-lightweight ONNX Runtime Predictor Engine for AgriSmart Backend."""
 import io
+import json
 import urllib.request
-from functools import lru_cache
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Optional, Tuple, Union
 
-import timm
-import torch
+import numpy as np
+import onnxruntime as ort
 from PIL import Image
 
 from app.treatments import get_treatment_info
 
-# Base repository root directory relative to backend/app/predictor.py
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+BACKEND_DIR = Path(__file__).resolve().parent.parent
 
-def locate_weights() -> Path:
-    local_backend = Path(__file__).resolve().parent.parent / "model.pt"
-    if local_backend.is_file() and local_backend.stat().st_size > 1000000:
-        return local_backend.resolve()
-        
-    cwd_model = Path("model.pt").resolve()
-    if cwd_model.is_file() and cwd_model.stat().st_size > 1000000:
-        return cwd_model
+MODEL_URL = "https://github.com/wpzvqrs8/SIH_2026/releases/download/offline-app-v1/india_v1.onnx"
 
+def locate_onnx_model() -> Path:
+    candidates = [
+        BACKEND_DIR / "india_v1.onnx",
+        REPO_ROOT / "offline" / "web" / "models" / "india_v1.onnx",
+        REPO_ROOT / "offline" / "android" / "app" / "src" / "main" / "assets" / "web" / "models" / "india_v1.onnx",
+        Path("india_v1.onnx"),
+    ]
+    for c in candidates:
+        if c.is_file() and c.stat().st_size > 1000000:
+            return c.resolve()
     import tempfile
-    return Path(tempfile.gettempdir()) / "agris_model.pt"
+    return Path(tempfile.gettempdir()) / "india_v1.onnx"
 
-_LOADED_MODEL_CACHE = None
+def locate_models_json() -> Path:
+    candidates = [
+        BACKEND_DIR / "models.json",
+        REPO_ROOT / "offline" / "web" / "models" / "models.json",
+        REPO_ROOT / "offline" / "android" / "app" / "src" / "main" / "assets" / "web" / "models" / "models.json",
+        Path("models.json"),
+    ]
+    for c in candidates:
+        if c.is_file() and c.stat().st_size > 100:
+            return c.resolve()
+    import tempfile
+    return Path(tempfile.gettempdir()) / "models.json"
 
-def load_model(weights_path: Optional[str] = None):
-    global _LOADED_MODEL_CACHE
-    if _LOADED_MODEL_CACHE is not None:
-        return _LOADED_MODEL_CACHE
+_SESSION_CACHE = None
+_META_CACHE = None
 
-    p = Path(weights_path) if weights_path else locate_weights()
-    if not (p.is_file() and p.stat().st_size > 1000000):
-        url = "https://github.com/wpzvqrs8/SIH_2026/releases/download/india-model-v1/model.pt"
-        print(f"[AgriSmart Predictor] Model file missing at {p}. Downloading from {url}...")
-        p.parent.mkdir(parents=True, exist_ok=True)
-        tmp_download = p.with_suffix(".tmp")
-        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-        with urllib.request.urlopen(req) as response, open(tmp_download, "wb") as out_file:
-            while chunk := response.read(1024 * 1024):
-                out_file.write(chunk)
-        if tmp_download.exists() and tmp_download.stat().st_size > 1000000:
-            if p.exists():
-                p.unlink()
-            tmp_download.rename(p)
-            print("[AgriSmart Predictor] Model weights download complete!")
+def load_session():
+    global _SESSION_CACHE, _META_CACHE
+    if _SESSION_CACHE is not None and _META_CACHE is not None:
+        return _SESSION_CACHE, _META_CACHE
+
+    onnx_path = locate_onnx_model()
+    if not (onnx_path.is_file() and onnx_path.stat().st_size > 1000000):
+        print(f"[AgriSmart ONNX Engine] Downloading lightweight model (~57MB) from {MODEL_URL}...")
+        onnx_path.parent.mkdir(parents=True, exist_ok=True)
+        tmp_p = onnx_path.with_suffix(".tmp")
+        req = urllib.request.Request(MODEL_URL, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req) as resp, open(tmp_p, "wb") as out:
+            while chunk := resp.read(1024 * 1024):
+                out.write(chunk)
+        if tmp_p.exists() and tmp_p.stat().st_size > 1000000:
+            if onnx_path.exists():
+                onnx_path.unlink()
+            tmp_p.rename(onnx_path)
+            print("[AgriSmart ONNX Engine] ONNX Model download complete!")
         else:
-            raise RuntimeError(f"Downloaded model weights from {url} were incomplete or invalid.")
+            raise RuntimeError("Downloaded ONNX model was invalid.")
 
-    try:
-        pkg = torch.load(p, map_location="cpu", weights_only=True)
-    except Exception:
-        pkg = torch.load(p, map_location="cpu", weights_only=False)
+    json_path = locate_models_json()
+    if not (json_path.is_file() and json_path.stat().st_size > 100):
+        json_url = "https://raw.githubusercontent.com/wpzvqrs8/SIH_2026/main/offline/web/models/models.json"
+        print(f"[AgriSmart ONNX Engine] Downloading models.json from {json_url}...")
+        json_path.parent.mkdir(parents=True, exist_ok=True)
+        req = urllib.request.Request(json_url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req) as resp, open(json_path, "wb") as out:
+            out.write(resp.read())
 
-    backbone = pkg.get("backbone", "resnet34")
-    labels = pkg["labels"]
-    img_size = pkg.get("img_size", 224)
-    mean = pkg.get("mean", [0.485, 0.456, 0.406])
-    std = pkg.get("std", [0.229, 0.224, 0.225])
+    with open(json_path, "r", encoding="utf-8") as f:
+        meta_data = json.load(f)
 
-    kwargs = {"img_size": img_size} if "vit" in backbone else {}
-    model = timm.create_model(backbone, pretrained=False, num_classes=len(labels), **kwargs)
-    model.load_state_dict(pkg["state_dict"])
-    model.eval()
+    # Use first model definition (india_v1)
+    model_meta = meta_data["models"][0]
 
-    tf = timm.data.create_transform(
-        input_size=img_size,
-        interpolation="bicubic",
-        mean=mean,
-        std=std,
-        crop_pct=0.9
-    )
+    # Create ONNX Runtime Inference Session (CPU execution)
+    opts = ort.SessionOptions()
+    opts.intra_op_num_threads = 1
+    opts.inter_op_num_threads = 1
+    session = ort.InferenceSession(str(onnx_path), sess_options=opts, providers=["CPUExecutionProvider"])
 
-    # Dynamic crop_classes construction
-    if "crop_classes" in pkg:
-        crop_classes = pkg["crop_classes"]
-    else:
-        crop_classes = {}
-        for idx, label in enumerate(labels):
-            if "::" in label:
-                crop = label.split("::", 1)[0].lower()
-            elif "___" in label:
-                crop = label.split("___", 1)[0].lower()
-            else:
-                crop = "general"
-            crop_classes.setdefault(crop, []).append(idx)
-
-    _LOADED_MODEL_CACHE = (model, tf, labels, crop_classes, backbone, img_size)
-    return _LOADED_MODEL_CACHE
+    _SESSION_CACHE = session
+    _META_CACHE = model_meta
+    return _SESSION_CACHE, _META_CACHE
 
 def process_image(image_input: Union[Image.Image, bytes, str]) -> Image.Image:
     if isinstance(image_input, Image.Image):
@@ -98,66 +98,76 @@ def process_image(image_input: Union[Image.Image, bytes, str]) -> Image.Image:
     if isinstance(image_input, bytes):
         return Image.open(io.BytesIO(image_input)).convert("RGB")
     if isinstance(image_input, str) and (image_input.startswith("http://") or image_input.startswith("https://")):
-        req = urllib.request.Request(image_input, headers={"User-Agent": "AgriSmart/1.0"})
+        req = urllib.request.Request(image_input, headers={"User-Agent": "Mozilla/5.0"})
         with urllib.request.urlopen(req) as resp:
             return Image.open(io.BytesIO(resp.read())).convert("RGB")
     return Image.open(image_input).convert("RGB")
 
-def format_label_details(raw_label: str) -> Tuple[str, str]:
-    if "::" in raw_label:
-        parts = raw_label.split("::", 1)
-        crop_raw, disease_raw = parts[0], parts[1]
-    elif "___" in raw_label:
-        parts = raw_label.split("___", 1)
-        crop_raw, disease_raw = parts[0], parts[1]
-    else:
-        crop_raw, disease_raw = "General", raw_label
+def preprocess_tensor(img: Image.Image) -> np.ndarray:
+    resized = img.resize((224, 224), Image.BICUBIC)
+    arr = np.array(resized, dtype=np.float32) / 255.0
+    mean = np.array([0.485, 0.456, 0.406], dtype=np.float32)
+    std = np.array([0.229, 0.224, 0.225], dtype=np.float32)
+    arr = (arr - mean) / std
+    arr = arr.transpose(2, 0, 1)
+    return arr[np.newaxis, ...]
 
-    crop_clean = crop_raw.replace("_", " ").strip().title()
-    disease_clean = disease_raw.replace("_", " ").replace("  ", " ").strip().title()
-    return crop_clean, disease_clean
-
-@torch.no_grad()
 def predict(
     image_input: Union[Image.Image, bytes, str],
     crop_filter: Optional[str] = None,
     top_k: int = 5
 ) -> dict:
-    model, tf, labels, crop_classes, backbone, img_size = load_model()
+    session, meta = load_session()
     pil_img = process_image(image_input)
-    tensor_img = tf(pil_img).unsqueeze(0)
+    tensor = preprocess_tensor(pil_img)
 
-    logits = model(tensor_img)
-    probs = torch.softmax(logits, dim=1)[0]
+    # Standard forward pass
+    logits = session.run(None, {"pixels": tensor})[0][0]
 
     # Test-time augmentation (horizontal flip)
-    flipped_tensor = tf(pil_img.transpose(Image.FLIP_LEFT_RIGHT)).unsqueeze(0)
-    flipped_probs = torch.softmax(model(flipped_tensor), dim=1)[0]
-    probs = (probs + flipped_probs) / 2.0
+    flipped_pil = pil_img.transpose(Image.FLIP_LEFT_RIGHT)
+    flipped_tensor = preprocess_tensor(flipped_pil)
+    flipped_logits = session.run(None, {"pixels": flipped_tensor})[0][0]
 
-    # Apply crop filtering if specified
+    # Softmax probabilities
+    exp_a = np.exp(logits - np.max(logits))
+    probs_a = exp_a / np.sum(exp_a)
+
+    exp_b = np.exp(flipped_logits - np.max(flipped_logits))
+    probs_b = exp_b / np.sum(exp_b)
+
+    probs = (probs_a + probs_b) / 2.0
+
+    labels = meta["labels"]
+    crop_classes = meta["crop_classes"]
+
+    # Filter by crop if specified
     if crop_filter:
-        c_lower = crop_filter.strip().lower()
+        c_lower = crop_filter.strip().lower().replace(" ", "_")
         if c_lower in crop_classes:
-            mask = torch.zeros_like(probs)
-            mask[crop_classes[c_lower]] = 1.0
+            allowed_indices = set(crop_classes[c_lower])
+            mask = np.zeros_like(probs)
+            for idx in allowed_indices:
+                mask[idx] = 1.0
             probs = probs * mask
-            total = probs.sum()
+            total = np.sum(probs)
             if total > 0:
                 probs = probs / total
 
-    top_probs, top_indices = torch.topk(probs, min(top_k, len(labels)))
+    top_indices = np.argsort(-probs)[:min(top_k, len(labels))]
 
     top_predictions = []
-    for p, idx in zip(top_probs.tolist(), top_indices.tolist()):
-        raw_lbl = labels[idx]
-        c_name, d_name = format_label_details(raw_lbl)
+    for idx in top_indices:
+        item = labels[idx]
+        c_name = item["crop"].replace("_", " ").title()
+        d_name = item["label"].replace("_", " ").title()
+        p_val = float(probs[idx])
         top_predictions.append({
-            "raw_label": raw_lbl,
+            "raw_label": f"{item['crop']}::${item['label']}",
             "crop": c_name,
             "disease": d_name,
-            "probability": round(p, 4),
-            "percentage": f"{round(p * 100, 2)}%"
+            "probability": round(p_val, 4),
+            "percentage": f"{round(p_val * 100, 2)}%"
         })
 
     best = top_predictions[0]
@@ -175,20 +185,23 @@ def predict(
         "treatments": treatments,
         "top_predictions": top_predictions,
         "model_metadata": {
-            "backbone": backbone,
-            "image_resolution": f"{img_size}x{img_size}",
-            "weights_file": locate_weights().name
+            "engine": "ONNX Runtime (CPU)",
+            "model_id": meta["id"],
+            "total_crops": len(crop_classes),
+            "total_classes": len(labels),
+            "ram_footprint": "~45 MB"
         }
     }
 
 def get_crops_catalog() -> dict:
-    model, _, labels, crop_classes, _, _ = load_model()
+    _, meta = load_session()
+    crop_classes = meta["crop_classes"]
+    labels = meta["labels"]
     catalog = {}
     for crop_key, idxs in crop_classes.items():
         crop_display = crop_key.replace("_", " ").title()
         diseases = set()
         for idx in idxs:
-            _, d_name = format_label_details(labels[idx])
-            diseases.add(d_name)
+            diseases.add(labels[idx]["label"].replace("_", " ").title())
         catalog[crop_display] = sorted(list(diseases))
     return catalog
