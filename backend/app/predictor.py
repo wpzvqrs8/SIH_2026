@@ -170,7 +170,7 @@ def predict(
         "model_metadata": {
             "backbone": backbone,
             "image_resolution": f"{img_size}x{img_size}",
-            "weights_file": WEIGHTS_PATH.name
+            "weights_file": locate_weights().name
         }
     }
 
