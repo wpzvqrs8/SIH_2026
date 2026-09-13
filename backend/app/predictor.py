@@ -27,11 +27,9 @@ def locate_weights() -> Path:
     # Fallback to local backend folder model.pt
     return Path(__file__).resolve().parent.parent / "model.pt"
 
-WEIGHTS_PATH = locate_weights()
-
 @lru_cache(maxsize=1)
-def load_model(weights_path: str = str(WEIGHTS_PATH)):
-    p = Path(weights_path)
+def load_model(weights_path: Optional[str] = None):
+    p = Path(weights_path) if weights_path else locate_weights()
     if not p.exists():
         url = "https://github.com/wpzvqrs8/SIH_2026/releases/download/india-model-v1/model.pt"
         print(f"[AgriSmart Predictor] Model file missing at {p}. Downloading from {url}...")

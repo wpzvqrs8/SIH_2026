@@ -4,7 +4,7 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, HttpUrl
 
-from app.predictor import WEIGHTS_PATH, get_crops_catalog, load_model, predict
+from app.predictor import get_crops_catalog, load_model, locate_weights, predict
 
 app = FastAPI(
     title="AgriSmart AI Disease Recognition API",
@@ -33,7 +33,7 @@ def startup_event():
     """Pre-warm model into RAM on server boot."""
     try:
         load_model()
-        print(f"[AgriSmart API] Successfully pre-loaded weights from {WEIGHTS_PATH}")
+        print(f"[AgriSmart API] Successfully pre-loaded weights from {locate_weights()}")
     except Exception as e:
         print(f"[AgriSmart API] Warning: Failed to pre-warm model on boot: {e}")
 
@@ -50,7 +50,7 @@ def health_check():
             "total_classes": len(labels),
             "total_crops": len(crop_classes),
             "backbone": backbone,
-            "weights_location": str(WEIGHTS_PATH)
+            "weights_location": str(locate_weights())
         }
     except Exception as e:
         return {
