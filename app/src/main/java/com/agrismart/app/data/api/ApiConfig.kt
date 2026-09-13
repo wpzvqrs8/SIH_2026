@@ -17,7 +17,7 @@ class ApiConfig @Inject constructor(
             val saved = prefs.getString("custom_server_url", "") ?: ""
             if (saved.isNotBlank()) return saved
             val raw = BuildConfig.API_BASE_URL.trim()
-            return if (raw.isNotBlank()) raw else "http://192.168.1.100:8765"
+            return if (raw.isNotBlank()) raw else "https://sih-2026-u4kv.onrender.com/"
         }
         set(value) {
             prefs.edit().putString("custom_server_url", value.trim()).apply()

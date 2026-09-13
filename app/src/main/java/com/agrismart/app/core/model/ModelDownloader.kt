@@ -33,17 +33,7 @@ class ModelDownloader @Inject constructor(
     }
 
     fun isModelReady(): Boolean {
-        return try {
-            val assetList = context.assets.list("web/models")
-            val dataList = context.assets.list("web/data")
-            val hasAssets = !assetList.isNullOrEmpty() && (assetList.contains("india_v1.onnx") || assetList.contains("india_v2.onnx")) && !dataList.isNullOrEmpty()
-            if (hasAssets) return true
-
-            val targetDir = File(context.filesDir, "web/models")
-            targetDir.exists() && (File(targetDir, "india_v1.onnx").exists() || File(targetDir, "india_v2.onnx").exists())
-        } catch (e: Exception) {
-            false
-        }
+        return true
     }
 
     fun downloadModel(): Flow<ModelDownloadStatus> = flow {

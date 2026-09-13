@@ -39,7 +39,7 @@ android {
             useSupportLibrary = true
         }
 
-        buildConfigField("String", "API_BASE_URL", "\"${env.getProperty("API_BASE_URL", "").trim()}\"")
+        buildConfigField("String", "API_BASE_URL", "\"${env.getProperty("API_BASE_URL", "https://sih-2026-u4kv.onrender.com/").trim()}\"")
     }
 
     androidResources {
