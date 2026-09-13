@@ -104,6 +104,89 @@ fun SettingsScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        // Online Live Search API Card (Pl@ntNet & Groq)
+        var enableOnline by remember { mutableStateOf(apiConfig?.enableOnlineSearch ?: false) }
+        var plantNetKeyInput by remember { mutableStateOf(apiConfig?.plantNetApiKey ?: "") }
+        var groqKeyInput by remember { mutableStateOf(apiConfig?.groqApiKey ?: "") }
+        var onlineSaveStatus by remember { mutableStateOf("") }
+
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(1.dp, MaterialTheme.colorScheme.outline, MaterialTheme.shapes.small),
+            shape = MaterialTheme.shapes.small,
+            color = MaterialTheme.colorScheme.surface
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(painter = painterResource(id = R.drawable.ic_wb_sunny), contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(text = "Online Live Search AI", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                        Text(
+                            text = "Pl@ntNet image search & Groq Vision AI for unlisted plants",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        )
+                    }
+                    Switch(
+                        checked = enableOnline,
+                        onCheckedChange = {
+                            enableOnline = it
+                            apiConfig?.enableOnlineSearch = it
+                        }
+                    )
+                }
+                if (enableOnline) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    OutlinedTextField(
+                        value = plantNetKeyInput,
+                        onValueChange = {
+                            plantNetKeyInput = it
+                            onlineSaveStatus = ""
+                        },
+                        label = { Text("Pl@ntNet API Key") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = groqKeyInput,
+                        onValueChange = {
+                            groqKeyInput = it
+                            onlineSaveStatus = ""
+                        },
+                        label = { Text("Groq Vision API Key") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Button(
+                            onClick = {
+                                apiConfig?.plantNetApiKey = plantNetKeyInput
+                                apiConfig?.groqApiKey = groqKeyInput
+                                onlineSaveStatus = "Saved API Keys!"
+                            }
+                        ) {
+                            Text("Save Keys")
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        if (onlineSaveStatus.isNotBlank()) {
+                            Text(text = onlineSaveStatus, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
         // Model Server Wi-Fi URL Settings Card
         Surface(
             modifier = Modifier

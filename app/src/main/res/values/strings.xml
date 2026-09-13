@@ -8,7 +8,7 @@
 
     <!-- Model Download -->
     <string name="model_download_title">Downloading Plant Disease Model</string>
-    <string name="model_download_subtitle">AgriSmart needs to download the local AI model (86.6 MB) directly from GitHub for offline plant checks.</string>
+    <string name="model_download_subtitle">AgriSmart needs to download the local AI model directly from GitHub for offline plant checks.</string>
     <string name="model_download_progress">%1$s of %2$s MB (%3$d%%)</string>
     <string name="model_download_status_downloading">Downloading model weights from GitHub…</string>
     <string name="model_download_status_verifying">Verifying SHA-256 integrity…</string>

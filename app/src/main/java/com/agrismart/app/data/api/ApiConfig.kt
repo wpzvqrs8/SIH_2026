@@ -23,6 +23,24 @@ class ApiConfig @Inject constructor(
             prefs.edit().putString("custom_server_url", value.trim()).apply()
         }
 
+    var plantNetApiKey: String
+        get() = prefs.getString("plantnet_api_key", "") ?: ""
+        set(value) {
+            prefs.edit().putString("plantnet_api_key", value.trim()).apply()
+        }
+
+    var groqApiKey: String
+        get() = prefs.getString("groq_api_key", "") ?: ""
+        set(value) {
+            prefs.edit().putString("groq_api_key", value.trim()).apply()
+        }
+
+    var enableOnlineSearch: Boolean
+        get() = prefs.getBoolean("enable_online_search", false)
+        set(value) {
+            prefs.edit().putBoolean("enable_online_search", value).apply()
+        }
+
     val isConfigured: Boolean
         get() = serverUrl.isNotBlank()
 

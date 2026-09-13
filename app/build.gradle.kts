@@ -13,6 +13,16 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+val webDir = rootProject.file("offline/web")
+val syncWeb by tasks.registering(Sync::class) {
+    from(webDir) {
+        exclude("models/**")
+        exclude("audio/**")
+    }
+    into(layout.projectDirectory.dir("src/main/assets/web"))
+}
+tasks.named("preBuild") { dependsOn(syncWeb) }
+
 android {
     namespace = "com.agrismart.app"
     compileSdk = 35
@@ -32,10 +42,15 @@ android {
         buildConfigField("String", "API_BASE_URL", "\"${env.getProperty("API_BASE_URL", "").trim()}\"")
     }
 
+    androidResources {
+        noCompress += listOf("onnx", "ogg", "wasm")
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            signingConfig = signingConfigs.getByName("debug")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

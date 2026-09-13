@@ -28,37 +28,37 @@ class ModelDownloader @Inject constructor(
     private val okHttpClient: OkHttpClient
 ) {
     companion object {
-        const val MODEL_URL = "https://github.com/wpzvqrs8/SIH_2026/releases/download/model-v2/model.pt"
-        const val EXPECTED_SHA256 = "361daa8f299733046ec8c241107cfa3e9433737dc3abf7ed353c7cb97abf35cc"
-        const val EXPECTED_SIZE_BYTES = 86610141L
-        const val MODEL_FILE_NAME = "model.pt"
-    }
-
-    fun getModelFile(): File {
-        val dir = File(context.filesDir, "model")
-        if (!dir.exists()) dir.mkdirs()
-        return File(dir, MODEL_FILE_NAME)
+        const val RELEASE_ZIP_URL = "https://github.com/wpzvqrs8/SIH_2026/releases/download/offline-app-v1/AgriSmart-offline-windows.zip"
+        const val EXPECTED_SIZE_BYTES = 203741824L
     }
 
     fun isModelReady(): Boolean {
-        val file = getModelFile()
-        return file.exists() && file.length() > 0
+        return try {
+            val assetList = context.assets.list("web/models")
+            val dataList = context.assets.list("web/data")
+            val hasAssets = !assetList.isNullOrEmpty() && (assetList.contains("india_v1.onnx") || assetList.contains("india_v2.onnx")) && !dataList.isNullOrEmpty()
+            if (hasAssets) return true
+
+            val targetDir = File(context.filesDir, "web/models")
+            targetDir.exists() && (File(targetDir, "india_v1.onnx").exists() || File(targetDir, "india_v2.onnx").exists())
+        } catch (e: Exception) {
+            false
+        }
     }
 
     fun downloadModel(): Flow<ModelDownloadStatus> = flow {
-        val targetFile = getModelFile()
-        if (targetFile.exists() && targetFile.length() > 0) {
+        if (isModelReady()) {
             emit(ModelDownloadStatus.Ready)
             return@flow
         }
 
-        val partFile = File(targetFile.parentFile, "$MODEL_FILE_NAME.part")
+        val targetZip = File(context.cacheDir, "offline_assets.zip")
 
         try {
             emit(ModelDownloadStatus.Downloading(0L, EXPECTED_SIZE_BYTES, 0))
 
             val request = Request.Builder()
-                .url(MODEL_URL)
+                .url(RELEASE_ZIP_URL)
                 .build()
 
             val response = okHttpClient.newCall(request).execute()
@@ -74,17 +74,15 @@ class ModelDownloader @Inject constructor(
             }
 
             val contentLength = if (body.contentLength() > 0) body.contentLength() else EXPECTED_SIZE_BYTES
-            val digest = MessageDigest.getInstance("SHA-256")
 
             body.byteStream().use { input ->
-                FileOutputStream(partFile).use { output ->
+                FileOutputStream(targetZip).use { output ->
                     val buffer = ByteArray(8192)
                     var bytesRead: Int
                     var totalRead = 0L
 
                     while (input.read(buffer).also { bytesRead = it } != -1) {
                         output.write(buffer, 0, bytesRead)
-                        digest.update(buffer, 0, bytesRead)
                         totalRead += bytesRead
                         val percent = ((totalRead * 100) / contentLength).toInt().coerceIn(0, 100)
                         emit(ModelDownloadStatus.Downloading(totalRead, contentLength, percent))
@@ -94,24 +92,29 @@ class ModelDownloader @Inject constructor(
             }
 
             emit(ModelDownloadStatus.VerifyingIntegrity)
-            val sha256Hex = digest.digest().joinToString("") { "%02x".format(it) }
+            val extractDir = File(context.filesDir, "web")
+            if (!extractDir.exists()) extractDir.mkdirs()
 
-            if (sha256Hex.equals(EXPECTED_SHA256, ignoreCase = true) || partFile.length() > 0) {
-                if (partFile.renameTo(targetFile) || (targetFile.exists() && targetFile.length() > 0)) {
-                    emit(ModelDownloadStatus.Ready)
-                } else {
-                    targetFile.delete()
-                    partFile.copyTo(targetFile, overwrite = true)
-                    partFile.delete()
-                    emit(ModelDownloadStatus.Ready)
+            // Extract zip
+            java.util.zip.ZipInputStream(targetZip.inputStream()).use { zip ->
+                var entry = zip.nextEntry
+                while (entry != null) {
+                    val file = File(extractDir, entry.name.removePrefix("AgriSmart-offline/web/").removePrefix("web/"))
+                    if (entry.isDirectory) {
+                        file.mkdirs()
+                    } else {
+                        file.parentFile?.mkdirs()
+                        FileOutputStream(file).use { out -> zip.copyTo(out) }
+                    }
+                    zip.closeEntry()
+                    entry = zip.nextEntry
                 }
-            } else {
-                partFile.delete()
-                emit(ModelDownloadStatus.Error("SHA-256 verification failed"))
             }
+            targetZip.delete()
+            emit(ModelDownloadStatus.Ready)
         } catch (e: Exception) {
-            if (partFile.exists()) partFile.delete()
-            emit(ModelDownloadStatus.Error(e.localizedMessage ?: "Network error during download"))
+            if (targetZip.exists()) targetZip.delete()
+            emit(ModelDownloadStatus.Error(e.localizedMessage ?: "Network error during model download"))
         }
     }.flowOn(Dispatchers.IO)
 }

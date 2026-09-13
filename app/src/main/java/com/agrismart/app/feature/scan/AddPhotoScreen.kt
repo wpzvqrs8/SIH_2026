@@ -21,13 +21,39 @@ import com.agrismart.app.R
 import com.agrismart.app.core.designsystem.components.PrimaryButton
 import com.agrismart.app.core.designsystem.components.SecondaryButton
 
+import android.graphics.Bitmap
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.IconButton
+import androidx.compose.ui.text.font.FontWeight
+
 @Composable
 fun AddPhotoScreen(
     cropId: String,
-    onTakePhotoClick: () -> Unit,
-    onChooseFromPhoneClick: () -> Unit,
+    onPhotoCaptured: (Bitmap?) -> Unit,
+    onPhotoSelected: (Uri?) -> Unit,
+    onBackClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicturePreview()
+    ) { bitmap ->
+        if (bitmap != null) {
+            onPhotoCaptured(bitmap)
+        }
+    }
+
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null) {
+            onPhotoSelected(uri)
+        }
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -36,14 +62,28 @@ fun AddPhotoScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = stringResource(R.string.add_photo_title),
-                style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.onBackground,
-                textAlign = TextAlign.Center
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                IconButton(onClick = onBackClick) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_chevron_right),
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.size(8.dp))
+                Text(
+                    text = stringResource(R.string.add_photo_title),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Text(
                 text = stringResource(R.string.photo_tip),
@@ -60,16 +100,20 @@ fun AddPhotoScreen(
             modifier = Modifier.size(100.dp)
         )
 
-        Column {
-            PrimaryButton(onClick = onTakePhotoClick) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            PrimaryButton(
+                onClick = { cameraLauncher.launch(null) }
+            ) {
                 Icon(painter = painterResource(id = R.drawable.ic_photo_camera), contentDescription = null)
                 Spacer(modifier = Modifier.size(8.dp))
-                Text(text = stringResource(R.string.take_photo), style = MaterialTheme.typography.labelLarge)
+                Text(text = "Open Camera & Take Photo", style = MaterialTheme.typography.labelLarge)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            SecondaryButton(onClick = onChooseFromPhoneClick) {
+            SecondaryButton(
+                onClick = { galleryLauncher.launch("image/*") }
+            ) {
                 Icon(painter = painterResource(id = R.drawable.ic_photo_library), contentDescription = null)
                 Spacer(modifier = Modifier.size(8.dp))
                 Text(text = stringResource(R.string.choose_from_phone), style = MaterialTheme.typography.labelLarge)

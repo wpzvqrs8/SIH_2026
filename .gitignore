@@ -26,6 +26,8 @@ offline/android/.gradle/
 offline/android/app/build/
 offline/android/build/
 offline/android/app/src/main/assets/web/
+app/src/main/assets/web/models/
+app/src/main/assets/web/audio/
 
 # Android & Gradle
 .gradle/
@@ -39,4 +41,6 @@ local.properties
 app/local.properties
 *.apk
 *.aar
+*.pt
+temp/
 

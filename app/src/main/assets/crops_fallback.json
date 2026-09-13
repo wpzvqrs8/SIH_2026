@@ -1,89 +1,787 @@
 {
-  "version": "2026-09-11",
+  "version": "2026-09-13",
   "crops": [
     {
       "id": "apple",
       "name": "Apple",
       "coverage": "full",
       "coverage_note": null,
-      "classes": ["apple_scab", "apple_cedar_rust", "apple_healthy"]
+      "classes": [
+        "Alternaria leaf blotch",
+        "Apple scab",
+        "Black rot",
+        "Cedar apple rust",
+        "Healthy",
+        "Mosaic virus"
+      ]
+    },
+    {
+      "id": "ash_gourd",
+      "name": "Ash Gourd",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Aphid (pest)",
+        "Downy mildew",
+        "Healthy",
+        "Leaf curl virus"
+      ]
+    },
+    {
+      "id": "banana",
+      "name": "Banana",
+      "coverage": "full",
+      "coverage_note": "Coverage is thin for this crop (few dozen photos per class); treat results with extra caution.",
+      "classes": [
+        "Anthracnose",
+        "Aphid (pest)",
+        "Bacterial soft rot",
+        "Bract mosaic virus",
+        "Bunchy top virus",
+        "Cigar end rot",
+        "Cordana leaf spot",
+        "Fruit scarring beetle (pest)",
+        "Healthy",
+        "Insect pest damage",
+        "Moko (bacterial wilt)",
+        "Panama disease (fusarium wilt)",
+        "Pestalotiopsis leaf spot",
+        "Potassium deficiency",
+        "Pseudostem weevil (pest)",
+        "Sigatoka leaf spot"
+      ]
+    },
+    {
+      "id": "bean",
+      "name": "Bean",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Anthracnose",
+        "Blight",
+        "Halo blight",
+        "Healthy",
+        "Mosaic virus",
+        "Rust"
+      ]
     },
     {
       "id": "bell_pepper",
-      "name": "Bell pepper",
+      "name": "Bell Pepper",
       "coverage": "full",
       "coverage_note": null,
-      "classes": ["pepper_bacterial_spot", "pepper_healthy"]
+      "classes": [
+        "Bacterial spot",
+        "Blossom end rot",
+        "Healthy"
+      ]
+    },
+    {
+      "id": "betel",
+      "name": "Betel",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Bacterial leaf disease",
+        "Dried leaf",
+        "Fungal brown spot",
+        "Healthy",
+        "Leaf rot",
+        "Leaf spot"
+      ]
+    },
+    {
+      "id": "bitter_gourd",
+      "name": "Bitter Gourd",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Downy mildew",
+        "Fusarium wilt",
+        "Healthy",
+        "Mosaic virus"
+      ]
+    },
+    {
+      "id": "black_gram",
+      "name": "Black Gram",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Anthracnose",
+        "Cercospora leaf spot",
+        "Healthy",
+        "Insect pest damage",
+        "Leaf crinkle virus",
+        "Powdery mildew",
+        "Yellow mosaic virus"
+      ]
     },
     {
       "id": "blueberry",
       "name": "Blueberry",
-      "coverage": "healthy_only",
-      "coverage_note": "Can only confirm a healthy leaf",
-      "classes": ["blueberry_healthy"]
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Healthy"
+      ]
+    },
+    {
+      "id": "bottle_gourd",
+      "name": "Bottle Gourd",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Alternaria leaf blight",
+        "Anthracnose",
+        "Downy mildew",
+        "Healthy",
+        "Mosaic virus"
+      ]
+    },
+    {
+      "id": "brinjal_eggplant",
+      "name": "Brinjal Eggplant",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Begomovirus leaf curl",
+        "Cercospora leaf spot",
+        "Fruit cracking",
+        "Fruit rot",
+        "Healthy",
+        "Insect pest damage",
+        "Mosaic virus",
+        "Phomopsis blight",
+        "Shoot and fruit borer (pest)",
+        "White mold",
+        "Wilt"
+      ]
+    },
+    {
+      "id": "cabbage",
+      "name": "Cabbage",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Alternaria leaf spot",
+        "Black rot",
+        "Downy mildew",
+        "Healthy"
+      ]
+    },
+    {
+      "id": "cashew",
+      "name": "Cashew",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Anthracnose",
+        "Gummosis",
+        "Healthy",
+        "Leaf miner (pest)",
+        "Red rust (algal)"
+      ]
+    },
+    {
+      "id": "cauliflower",
+      "name": "Cauliflower",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Alternaria leaf spot",
+        "Bacterial soft rot",
+        "Black rot",
+        "Downy mildew",
+        "Healthy",
+        "Insect pest damage"
+      ]
     },
     {
       "id": "cherry",
       "name": "Cherry",
-      "coverage": "healthy_only",
-      "coverage_note": "Can only confirm a healthy leaf",
-      "classes": ["cherry_healthy"]
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Healthy",
+        "Leaf spot",
+        "Powdery mildew"
+      ]
     },
     {
-      "id": "corn",
-      "name": "Corn (maize)",
-      "coverage": "diseases_only",
-      "coverage_note": "Can name 3 corn diseases; cannot confirm a healthy leaf yet.",
-      "classes": ["corn_gray_leaf_spot", "corn_common_rust", "corn_northern_leaf_blight"]
+      "id": "chilli",
+      "name": "Chilli",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Cercospora leaf spot",
+        "Healthy",
+        "Mites and thrips (pest)",
+        "Nutrient deficiency",
+        "Powdery mildew"
+      ]
+    },
+    {
+      "id": "citrus_orange",
+      "name": "Citrus Orange",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Black spot",
+        "Citrus canker",
+        "Citrus greening (HLB)",
+        "Dieback",
+        "Greasy spot",
+        "Healthy",
+        "Leaf miner (pest)",
+        "Mealybug (pest)",
+        "Mite damage",
+        "Nutrient deficiency",
+        "Powdery mildew",
+        "Scale insect (pest)",
+        "Shot hole",
+        "Spiny whitefly (pest)"
+      ]
+    },
+    {
+      "id": "coconut",
+      "name": "Coconut",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Bud root dropping",
+        "Bud rot",
+        "Grey leaf spot",
+        "Leaf rot",
+        "Stem bleeding"
+      ]
+    },
+    {
+      "id": "coffee",
+      "name": "Coffee",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Cercospora leaf spot",
+        "Healthy",
+        "Leaf miner (pest)",
+        "Leaf rust",
+        "Phoma leaf spot"
+      ]
+    },
+    {
+      "id": "corn_maize",
+      "name": "Corn Maize",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Common rust",
+        "Common smut",
+        "Curvularia leaf spot",
+        "Fall armyworm (pest)",
+        "Grasshopper (pest)",
+        "Gray leaf spot",
+        "Healthy",
+        "Leaf beetle (pest)",
+        "Northern leaf blight"
+      ]
+    },
+    {
+      "id": "cotton",
+      "name": "Cotton",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Alternaria leaf spot",
+        "Bacterial blight",
+        "Fusarium wilt",
+        "Healthy",
+        "Herbicide damage",
+        "Leaf curl virus",
+        "Leaf reddening",
+        "Leaf variegation",
+        "Leafhopper / jassid (pest)",
+        "Verticillium wilt"
+      ]
+    },
+    {
+      "id": "cowpea",
+      "name": "Cowpea",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Bacterial wilt",
+        "Healthy",
+        "Mosaic virus",
+        "Septoria leaf spot"
+      ]
+    },
+    {
+      "id": "cucumber",
+      "name": "Cucumber",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Angular leaf spot",
+        "Anthracnose",
+        "Bacterial wilt",
+        "Belly rot (fruit)",
+        "Downy mildew",
+        "Gummy stem blight",
+        "Healthy",
+        "Powdery mildew",
+        "Pythium fruit rot"
+      ]
+    },
+    {
+      "id": "custard_apple",
+      "name": "Custard Apple",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Anthracnose",
+        "Black canker",
+        "Diplodia fruit rot",
+        "Fruit spot",
+        "Leaf spot",
+        "Mealybug (pest)"
+      ]
+    },
+    {
+      "id": "finger_millet_ragi",
+      "name": "Finger Millet Ragi",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Downy mildew",
+        "Healthy",
+        "Mottle streak virus",
+        "Smut",
+        "Wilt"
+      ]
+    },
+    {
+      "id": "garlic",
+      "name": "Garlic",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Healthy",
+        "Leaf blight",
+        "Rust"
+      ]
+    },
+    {
+      "id": "ginger",
+      "name": "Ginger",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Healthy",
+        "Leaf spot",
+        "Sheath blight"
+      ]
     },
     {
       "id": "grape",
       "name": "Grape",
       "coverage": "full",
       "coverage_note": null,
-      "classes": ["grape_black_rot", "grape_healthy"]
+      "classes": [
+        "Bacterial leaf spot",
+        "Black rot",
+        "Downy mildew",
+        "Esca (black measles)",
+        "Healthy",
+        "Isariopsis leaf spot",
+        "Leafroll virus",
+        "Powdery mildew"
+      ]
+    },
+    {
+      "id": "groundnut",
+      "name": "Groundnut",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Alternaria leaf spot",
+        "Healthy",
+        "Nutrient deficiency",
+        "Rosette virus",
+        "Rust",
+        "Tikka leaf spot"
+      ]
+    },
+    {
+      "id": "guava",
+      "name": "Guava",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Anthracnose",
+        "Canker",
+        "Dot (algal spot)",
+        "Fruit mummification",
+        "Healthy",
+        "Phytophthora fruit rot",
+        "Red rust",
+        "Scab",
+        "Styler end rot"
+      ]
+    },
+    {
+      "id": "jamun",
+      "name": "Jamun",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Bacterial spot",
+        "Brown blight",
+        "Dry leaf",
+        "Healthy",
+        "Powdery mildew",
+        "Sooty mould"
+      ]
+    },
+    {
+      "id": "jute",
+      "name": "Jute",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Dieback",
+        "Healthy",
+        "Mosaic virus",
+        "Pest-holed leaf",
+        "Stem rot"
+      ]
+    },
+    {
+      "id": "lemon",
+      "name": "Lemon",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Anthracnose",
+        "Bacterial blight",
+        "Citrus canker",
+        "Dry leaf",
+        "Healthy",
+        "Leaf curl virus",
+        "Nutrient deficiency",
+        "Sooty mould",
+        "Spider mites (pest)"
+      ]
+    },
+    {
+      "id": "lentil",
+      "name": "Lentil",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Ascochyta blight",
+        "Healthy",
+        "Powdery mildew",
+        "Rust"
+      ]
+    },
+    {
+      "id": "malabar_spinach",
+      "name": "Malabar Spinach",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Anthracnose leaf spot",
+        "Healthy",
+        "Mite damage"
+      ]
+    },
+    {
+      "id": "mango",
+      "name": "Mango",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Anthracnose",
+        "Bacterial canker",
+        "Cutting weevil (pest)",
+        "Die back",
+        "Gall midge (pest)",
+        "Healthy",
+        "Powdery mildew",
+        "Sooty mould"
+      ]
+    },
+    {
+      "id": "moringa",
+      "name": "Moringa",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Bacterial leaf spot",
+        "Cercospora leaf spot",
+        "Healthy",
+        "Yellowing leaf"
+      ]
+    },
+    {
+      "id": "okra",
+      "name": "Okra",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Alternaria leaf spot",
+        "Cercospora leaf spot",
+        "Downy mildew",
+        "Healthy",
+        "Leaf curl virus",
+        "Phyllosticta leaf spot",
+        "Yellow vein mosaic virus"
+      ]
+    },
+    {
+      "id": "onion",
+      "name": "Onion",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Botrytis leaf blight",
+        "Caterpillar (pest)",
+        "Downy mildew",
+        "Fusarium basal rot",
+        "Healthy",
+        "Iris yellow spot virus",
+        "Purple blotch",
+        "Rust",
+        "Stemphylium / Colletotrichum blight",
+        "Xanthomonas leaf blight"
+      ]
+    },
+    {
+      "id": "papaya",
+      "name": "Papaya",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Anthracnose",
+        "Bacterial spot",
+        "Healthy",
+        "Leaf curl virus",
+        "Mealybug (pest)",
+        "Mite damage",
+        "Mosaic virus",
+        "Ring spot virus"
+      ]
     },
     {
       "id": "peach",
       "name": "Peach",
-      "coverage": "healthy_only",
-      "coverage_note": "Can only confirm a healthy leaf",
-      "classes": ["peach_healthy"]
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Bacterial spot",
+        "Brown rot",
+        "Healthy",
+        "Leaf curl",
+        "Scab"
+      ]
+    },
+    {
+      "id": "pomegranate",
+      "name": "Pomegranate",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Alternaria fruit spot",
+        "Anthracnose",
+        "Bacterial blight (oily spot)",
+        "Cercospora fruit spot",
+        "Fruit borer (pest)",
+        "Healthy",
+        "Sunburn"
+      ]
     },
     {
       "id": "potato",
       "name": "Potato",
-      "coverage": "diseases_only",
-      "coverage_note": "Can't confirm a healthy leaf",
-      "classes": ["potato_early_blight", "potato_late_blight"]
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Early blight",
+        "Healthy",
+        "Insect pest damage",
+        "Late blight",
+        "Virus disease"
+      ]
+    },
+    {
+      "id": "pumpkin",
+      "name": "Pumpkin",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Bacterial leaf spot",
+        "Downy mildew",
+        "Healthy",
+        "Mosaic virus",
+        "Powdery mildew"
+      ]
+    },
+    {
+      "id": "radish",
+      "name": "Radish",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Black leaf spot",
+        "Downy mildew",
+        "Flea beetle (pest)",
+        "Healthy",
+        "Mosaic virus"
+      ]
     },
     {
       "id": "raspberry",
       "name": "Raspberry",
-      "coverage": "healthy_only",
-      "coverage_note": "Can only confirm a healthy leaf",
-      "classes": ["raspberry_healthy"]
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Healthy"
+      ]
+    },
+    {
+      "id": "rice",
+      "name": "Rice",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Bacterial leaf blight",
+        "Bacterial leaf streak",
+        "Bacterial panicle blight",
+        "Blast",
+        "Brown spot",
+        "Dead heart (stem borer)",
+        "Downy mildew",
+        "Healthy",
+        "Hispa (pest)",
+        "Leaf folder (pest)",
+        "Leaf scald",
+        "Sheath blight",
+        "Tungro"
+      ]
     },
     {
       "id": "soybean",
       "name": "Soybean",
-      "coverage": "healthy_only",
-      "coverage_note": "Can only confirm a healthy leaf",
-      "classes": ["soybean_healthy"]
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Bacterial blight",
+        "Downy mildew",
+        "Dry leaf",
+        "Frogeye leaf spot",
+        "Healthy",
+        "Mosaic virus",
+        "Rust",
+        "Semilooper caterpillar (pest)",
+        "Septoria brown spot",
+        "Vein necrosis"
+      ]
+    },
+    {
+      "id": "spinach",
+      "name": "Spinach",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Anthracnose",
+        "Bacterial spot",
+        "Downy mildew",
+        "Healthy",
+        "Insect pest damage"
+      ]
     },
     {
       "id": "squash",
       "name": "Squash",
-      "coverage": "diseases_only",
-      "coverage_note": "Can't confirm a healthy leaf",
-      "classes": ["squash_powdery_mildew"]
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Healthy",
+        "Powdery mildew"
+      ]
     },
     {
       "id": "strawberry",
       "name": "Strawberry",
-      "coverage": "healthy_only",
-      "coverage_note": "Can only confirm a healthy leaf",
-      "classes": ["strawberry_healthy"]
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Anthracnose",
+        "Healthy",
+        "Leaf scorch"
+      ]
+    },
+    {
+      "id": "sugarcane",
+      "name": "Sugarcane",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Banded chlorosis",
+        "Brown spot",
+        "Dried leaf",
+        "Grassy shoot",
+        "Healthy",
+        "Mosaic virus",
+        "Pokkah boeng",
+        "Red rot",
+        "Rust",
+        "Sett rot",
+        "Smut",
+        "Yellow leaf disease"
+      ]
+    },
+    {
+      "id": "sunflower",
+      "name": "Sunflower",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Downy mildew",
+        "Gray mold",
+        "Healthy",
+        "Leaf scars"
+      ]
+    },
+    {
+      "id": "tea",
+      "name": "Tea",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Algal leaf spot",
+        "Blister blight",
+        "Brown blight",
+        "Gray blight",
+        "Green mirid bug (pest)",
+        "Healthy",
+        "Red leaf spot",
+        "Red rust (algal)",
+        "Red spider mite (pest)",
+        "Tea mosquito bug (helopeltis)"
+      ]
+    },
+    {
+      "id": "tobacco",
+      "name": "Tobacco",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Brown spot",
+        "Healthy",
+        "Mosaic virus"
+      ]
     },
     {
       "id": "tomato",
@@ -91,23 +789,76 @@
       "coverage": "full",
       "coverage_note": null,
       "classes": [
-        "tomato_bacterial_spot",
-        "tomato_early_blight",
-        "tomato_late_blight",
-        "tomato_leaf_mold",
-        "tomato_septoria_leaf_spot",
-        "tomato_spider_mites",
-        "tomato_mosaic_virus",
-        "tomato_yellow_leaf_curl_virus",
-        "tomato_healthy"
+        "Bacterial spot",
+        "Blossom end rot",
+        "Early blight",
+        "Fruit borer (pest)",
+        "Healthy",
+        "Late blight",
+        "Leaf miner (pest)",
+        "Leaf mold",
+        "Magnesium deficiency",
+        "Mosaic virus",
+        "Nitrogen deficiency",
+        "Potassium deficiency",
+        "Septoria leaf spot",
+        "Spider mites (pest)",
+        "Spotted wilt virus",
+        "Sunscald",
+        "Target spot",
+        "Yellow leaf curl virus"
       ]
     },
     {
-      "id": "other",
-      "name": "Others",
+      "id": "turmeric",
+      "name": "Turmeric",
       "coverage": "full",
-      "coverage_note": "Best match among supported plants",
-      "classes": []
+      "coverage_note": null,
+      "classes": [
+        "Aphid (pest)",
+        "Dry leaf",
+        "Healthy",
+        "Healthy rhizome",
+        "Leaf blotch",
+        "Leaf spot",
+        "Rhizome rot"
+      ]
+    },
+    {
+      "id": "watermelon",
+      "name": "Watermelon",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Anthracnose",
+        "Downy mildew",
+        "Healthy",
+        "Mosaic virus"
+      ]
+    },
+    {
+      "id": "wheat",
+      "name": "Wheat",
+      "coverage": "full",
+      "coverage_note": null,
+      "classes": [
+        "Aphid (pest)",
+        "Bacterial leaf streak",
+        "Black (stem) rust",
+        "Blast",
+        "Brown (leaf) rust",
+        "Common root rot",
+        "Fusarium head blight",
+        "Healthy",
+        "Leaf blight",
+        "Mite (pest)",
+        "Powdery mildew",
+        "Septoria blotch",
+        "Smut",
+        "Stem fly (pest)",
+        "Tan spot",
+        "Yellow (stripe) rust"
+      ]
     }
   ]
 }

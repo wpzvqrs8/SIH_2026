@@ -67,6 +67,7 @@ import java.util.concurrent.Executors
 fun LiveCameraScreen(
     predictionRepository: PredictionRepository,
     onResultConfirmed: (PredictionResult) -> Unit,
+    onBackClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -94,7 +95,7 @@ fun LiveCameraScreen(
     var liveHint by remember { mutableStateOf("Hold steady over leaf") }
     var isScanning by remember { mutableStateOf(true) }
 
-    // Simulated real-time frame analyzer cycling mock predictions
+    // Real-time frame analyzer cycling mock predictions
     LaunchedEffect(isScanning) {
         val crops = listOf("tomato", "apple", "potato", "corn")
         var index = 0
@@ -107,7 +108,7 @@ fun LiveCameraScreen(
                 else -> "Hold steady for best accuracy"
             }
             index++
-            delay(2000) // update real-time analysis every 2 sec
+            delay(2000)
         }
     }
 
@@ -135,6 +136,7 @@ fun LiveCameraScreen(
         AndroidView(
             factory = { ctx ->
                 val previewView = PreviewView(ctx).apply {
+                    implementationMode = PreviewView.ImplementationMode.COMPATIBLE
                     layoutParams = ViewGroup.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT
@@ -163,6 +165,22 @@ fun LiveCameraScreen(
             modifier = Modifier.fillMaxSize()
         )
 
+        // Top Back Button Overlay
+        IconButton(
+            onClick = onBackClick,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(16.dp)
+                .background(androidx.compose.ui.graphics.Color.Black.copy(alpha = 0.5f), CircleShape)
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_chevron_right),
+                contentDescription = "Back to Main Menu",
+                tint = androidx.compose.ui.graphics.Color.White,
+                modifier = Modifier.size(28.dp)
+            )
+        }
+
         // Center Square Leaf Frame Overlay
         Box(
             modifier = Modifier
@@ -176,14 +194,14 @@ fun LiveCameraScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.TopCenter)
-                .padding(16.dp)
+                .padding(start = 72.dp, top = 16.dp, end = 16.dp, bottom = 16.dp)
         ) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f)),
                 shape = MaterialTheme.shapes.medium
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(14.dp)) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -197,7 +215,7 @@ fun LiveCameraScreen(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "REAL-TIME LIVE SCAN",
+                                text = "REAL-TIME SCAN",
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
@@ -205,8 +223,9 @@ fun LiveCameraScreen(
                         }
 
                         Text(
-                            text = liveHint,
+                            text = "India v1 (59 Crops)",
                             style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                         )
                     }

@@ -5,10 +5,13 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -25,6 +28,7 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -35,6 +39,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -68,6 +73,30 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
+import android.webkit.ConsoleMessage
+import android.webkit.JavascriptInterface
+import android.webkit.PermissionRequest
+import android.webkit.ValueCallback
+import android.webkit.WebChromeClient
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
+import android.webkit.WebSettings
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import androidx.compose.ui.viewinterop.AndroidView
+import org.json.JSONObject
+import java.io.ByteArrayInputStream
+import java.io.File
+import java.io.FileInputStream
+import java.io.InputStream
+import java.util.Locale
+
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
@@ -83,18 +112,41 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var predictionRepository: PredictionRepository
 
+    private var tts: TextToSpeech? = null
+    private var ttsReady = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        tts = TextToSpeech(this) { status ->
+            ttsReady = status == TextToSpeech.SUCCESS
+        }
         setContent {
             AgriSmartTheme {
                 AgriSmartAppContent(
                     apiConfig = apiConfig,
                     modelDownloader = modelDownloader,
                     cropRepository = cropRepository,
-                    predictionRepository = predictionRepository
+                    predictionRepository = predictionRepository,
+                    activity = this
                 )
             }
         }
+    }
+
+    fun speakText(text: String, lang: String): Boolean {
+        if (!ttsReady || tts == null) return false
+        val locale = Locale(lang, "IN")
+        tts?.language = locale
+        return tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "utt_id") == TextToSpeech.SUCCESS
+    }
+
+    fun stopSpeaking() {
+        tts?.stop()
+    }
+
+    override fun onDestroy() {
+        tts?.shutdown()
+        super.onDestroy()
     }
 }
 
@@ -104,7 +156,8 @@ fun AgriSmartAppContent(
     apiConfig: ApiConfig,
     modelDownloader: ModelDownloader,
     cropRepository: CropRepository,
-    predictionRepository: PredictionRepository
+    predictionRepository: PredictionRepository,
+    activity: MainActivity? = null
 ) {
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -113,7 +166,7 @@ fun AgriSmartAppContent(
     val navBackStackEntry = navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry.value?.destination?.route
 
-    val isFullscreenRoute = currentRoute == "language" || currentRoute == "model_download"
+    val isFullscreenRoute = currentRoute == "language" || currentRoute == "model_download" || currentRoute == "offline_engine"
 
     var currentResult by remember { mutableStateOf<PredictionResult?>(null) }
 
@@ -149,6 +202,17 @@ fun AgriSmartAppContent(
                             navController.navigate("home") {
                                 popUpTo("home") { inclusive = true }
                             }
+                        },
+                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                    )
+
+                    NavigationDrawerItem(
+                        icon = { Icon(painterResource(id = R.drawable.ic_wb_sunny), contentDescription = null) },
+                        label = { Text("Offline AI Engine (59 Crops)") },
+                        selected = currentRoute == "offline_engine",
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            navController.navigate("offline_engine")
                         },
                         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
                     )
@@ -265,10 +329,17 @@ fun AgriSmartAppContent(
                     )
                 }
 
+                composable("offline_engine") {
+                    OfflineEngineScreen(
+                        activity = activity,
+                        onBackClick = { navController.navigate("home") }
+                    )
+                }
+
                 composable("home") {
                     HomeScreen(
-                        onCheckPlantClick = { navController.navigate("choose_plant") },
                         onLiveCameraClick = { navController.navigate("live_camera") },
+                        onImageTestingClick = { navController.navigate("choose_plant") },
                         onRecentTestsClick = { navController.navigate("history") }
                     )
                 }
@@ -279,7 +350,8 @@ fun AgriSmartAppContent(
                         onResultConfirmed = { result ->
                             currentResult = result
                             navController.navigate("result")
-                        }
+                        },
+                        onBackClick = { navController.navigate("home") }
                     )
                 }
 
@@ -288,7 +360,8 @@ fun AgriSmartAppContent(
                         cropRepository = cropRepository,
                         onCropSelected = { cropId ->
                             navController.navigate("add_photo/$cropId")
-                        }
+                        },
+                        onBackClick = { navController.navigate("home") }
                     )
                 }
 
@@ -299,8 +372,9 @@ fun AgriSmartAppContent(
                     val cropId = backStack.arguments?.getString("cropId") ?: "tomato"
                     AddPhotoScreen(
                         cropId = cropId,
-                        onTakePhotoClick = { navController.navigate("checking/$cropId") },
-                        onChooseFromPhoneClick = { navController.navigate("checking/$cropId") }
+                        onPhotoCaptured = { navController.navigate("checking/$cropId") },
+                        onPhotoSelected = { navController.navigate("checking/$cropId") },
+                        onBackClick = { navController.navigate("choose_plant") }
                     )
                 }
 
@@ -349,5 +423,144 @@ fun AgriSmartAppContent(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun OfflineEngineScreen(
+    activity: MainActivity?,
+    onBackClick: () -> Unit
+) {
+    val host = "appassets.androidplatform.net"
+    Column(modifier = Modifier.fillMaxSize()) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 4.dp
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onBackClick) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_chevron_right),
+                        contentDescription = "Back to Main Menu",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Offline AI Scanner (59 Crops)",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+        AndroidView(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
+            factory = { ctx ->
+                WebView(ctx).apply {
+                    setBackgroundColor(android.graphics.Color.parseColor("#f3f5ef"))
+                    settings.apply {
+                        javaScriptEnabled = true
+                        domStorageEnabled = true
+                        mediaPlaybackRequiresUserGesture = false
+                        allowFileAccess = false
+                        allowContentAccess = true
+                    }
+                    addJavascriptInterface(object {
+                        @JavascriptInterface
+                        fun share(text: String) {
+                            activity?.runOnUiThread {
+                                val send = Intent(Intent.ACTION_SEND).apply {
+                                    type = "text/plain"
+                                    putExtra(Intent.EXTRA_TEXT, text)
+                                }
+                                activity.startActivity(Intent.createChooser(send, null))
+                            }
+                        }
+
+                        @JavascriptInterface
+                        fun speak(text: String, lang: String, id: String): Boolean {
+                            return activity?.speakText(text, lang) ?: false
+                        }
+
+                        @JavascriptInterface
+                        fun hasVoice(lang: String): Boolean {
+                            return true
+                        }
+
+                        @JavascriptInterface
+                        fun stopSpeaking() {
+                            activity?.stopSpeaking()
+                        }
+                    }, "AgriSmartAndroid")
+
+                    webViewClient = object : WebViewClient() {
+                        override fun shouldInterceptRequest(
+                            view: WebView?,
+                            request: WebResourceRequest?
+                        ): WebResourceResponse? {
+                            val url = request?.url ?: return null
+                            if (host != url.host) return null
+
+                            var path = url.path ?: "/index.html"
+                            if (path == "/" || path.isEmpty()) path = "/index.html"
+                            if (path.contains("..")) return null
+
+                            val assetPath = "web$path"
+                            val headers = hashMapOf(
+                                "Cross-Origin-Opener-Policy" to "same-origin",
+                                "Cross-Origin-Embedder-Policy" to "credentialless",
+                                "Cross-Origin-Resource-Policy" to "same-origin",
+                                "Cache-Control" to "no-cache"
+                            )
+                            return try {
+                                val stream: InputStream = try {
+                                    ctx.assets.open(assetPath)
+                                } catch (e: Exception) {
+                                    val file = File(ctx.filesDir, assetPath)
+                                    if (file.exists() && file.length() > 0) FileInputStream(file) else throw e
+                                }
+                                val mime = when {
+                                    assetPath.endsWith(".html") -> "text/html"
+                                    assetPath.endsWith(".js") || assetPath.endsWith(".mjs") -> "text/javascript"
+                                    assetPath.endsWith(".css") -> "text/css"
+                                    assetPath.endsWith(".json") -> "application/json"
+                                    assetPath.endsWith(".wasm") -> "application/wasm"
+                                    assetPath.endsWith(".ogg") -> "audio/ogg"
+                                    assetPath.endsWith(".svg") -> "image/svg+xml"
+                                    assetPath.endsWith(".png") -> "image/png"
+                                    else -> "application/octet-stream"
+                                }
+                                val charset = if (mime.startsWith("text/") || mime.endsWith("javascript") || mime.endsWith("json")) "utf-8" else null
+                                WebResourceResponse(mime, charset, 200, "OK", headers, stream)
+                            } catch (e: Exception) {
+                                WebResourceResponse("text/plain", "utf-8", 404, "Not Found", headers, ByteArrayInputStream(ByteArray(0)))
+                            }
+                        }
+                    }
+
+                    webChromeClient = object : WebChromeClient() {
+                        override fun onPermissionRequest(request: PermissionRequest?) {
+                            activity?.runOnUiThread {
+                                request?.grant(arrayOf(PermissionRequest.RESOURCE_VIDEO_CAPTURE))
+                            }
+                        }
+                    }
+
+                    loadUrl("https://$host/index.html")
+                }
+            }
+        )
     }
 }

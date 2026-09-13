@@ -14,23 +14,62 @@ import timm
 import torch
 from PIL import Image
 
-WEIGHTS = str(Path(__file__).resolve().parent / "model.pt")
+def find_weights(weights=None):
+    if weights and Path(weights).exists():
+        return str(Path(weights).resolve())
+    candidates = [
+        Path(__file__).resolve().parent / "model.pt",
+        Path(__file__).resolve().parent.parent / "model.pt",
+        Path("model/model.pt"),
+        Path("model/india/model.pt"),
+    ]
+    for c in candidates:
+        if c.exists():
+            return str(c.resolve())
+    return str(candidates[0])
+
+WEIGHTS = find_weights()
 
 
 @lru_cache(maxsize=2)
 def load(weights=WEIGHTS):
-    pkg = torch.load(weights, map_location="cpu", weights_only=True)
-    kwargs = {"img_size": pkg["img_size"]} if "vit" in pkg["backbone"] else {}
+    weights = find_weights(weights)
+    try:
+        pkg = torch.load(weights, map_location="cpu", weights_only=True)
+    except Exception:
+        pkg = torch.load(weights, map_location="cpu", weights_only=False)
+    kwargs = {"img_size": pkg["img_size"]} if "vit" in pkg.get("backbone", "") else {}
     model = timm.create_model(pkg["backbone"], pretrained=False, num_classes=len(pkg["labels"]), **kwargs)
     model.load_state_dict(pkg["state_dict"])
     model.eval()
     tf = timm.data.create_transform(input_size=pkg["img_size"], interpolation="bicubic",
                                     mean=pkg["mean"], std=pkg["std"], crop_pct=0.9)
-    return model, tf, pkg["labels"], pkg["crop_classes"]
+    if "crop_classes" in pkg:
+        crop_classes = pkg["crop_classes"]
+    else:
+        crop_classes = {}
+        for idx, label in enumerate(pkg["labels"]):
+            if "::" in label:
+                crop = label.split("::", 1)[0].lower()
+            elif "___" in label:
+                crop = label.split("___", 1)[0].lower()
+            else:
+                crop = "general"
+            crop_classes.setdefault(crop, []).append(idx)
+    return model, tf, pkg["labels"], crop_classes
 
+
+import io
+import urllib.request
 
 def _as_image(image):
-    return image.convert("RGB") if isinstance(image, Image.Image) else Image.open(image).convert("RGB")
+    if isinstance(image, Image.Image):
+        return image.convert("RGB")
+    if isinstance(image, str) and (image.startswith("http://") or image.startswith("https://")):
+        req = urllib.request.Request(image, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req) as resp:
+            return Image.open(io.BytesIO(resp.read())).convert("RGB")
+    return Image.open(image).convert("RGB")
 
 
 @torch.no_grad()
@@ -61,9 +100,20 @@ def predict(image, crop=None, weights=WEIGHTS):
 
 def crops_and_labels(weights=WEIGHTS):
     """{crop: [disease, ...]} for building a crop-choice menu."""
-    _, _, _, crop_classes = load(weights)
-    _, _, labels, _ = load(weights)
-    return {c: sorted({labels[i].split("::", 1)[1] for i in idxs}) for c, idxs in crop_classes.items()}
+    _, _, labels, crop_classes = load(weights)
+    result = {}
+    for c, idxs in crop_classes.items():
+        diseases = set()
+        for i in idxs:
+            lbl = labels[i]
+            if "::" in lbl:
+                diseases.add(lbl.split("::", 1)[1])
+            elif "___" in lbl:
+                diseases.add(lbl.split("___", 1)[1])
+            else:
+                diseases.add(lbl)
+        result[c] = sorted(diseases)
+    return result
 
 
 if __name__ == "__main__":
