@@ -14,7 +14,9 @@ from app.treatments import get_treatment_info
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 
-MODEL_URL = "https://github.com/wpzvqrs8/SIH_2026/releases/download/offline-app-v1/india_v1.onnx"
+import zipfile
+
+ZIP_URL = "https://github.com/wpzvqrs8/SIH_2026/releases/download/offline-app-v1/AgriSmart-offline-windows.zip"
 
 def locate_onnx_model() -> Path:
     candidates = [
@@ -51,30 +53,25 @@ def load_session():
         return _SESSION_CACHE, _META_CACHE
 
     onnx_path = locate_onnx_model()
-    if not (onnx_path.is_file() and onnx_path.stat().st_size > 1000000):
-        print(f"[AgriSmart ONNX Engine] Downloading lightweight model (~57MB) from {MODEL_URL}...")
-        onnx_path.parent.mkdir(parents=True, exist_ok=True)
-        tmp_p = onnx_path.with_suffix(".tmp")
-        req = urllib.request.Request(MODEL_URL, headers={"User-Agent": "Mozilla/5.0"})
-        with urllib.request.urlopen(req) as resp, open(tmp_p, "wb") as out:
-            while chunk := resp.read(1024 * 1024):
-                out.write(chunk)
-        if tmp_p.exists() and tmp_p.stat().st_size > 1000000:
-            if onnx_path.exists():
-                onnx_path.unlink()
-            tmp_p.rename(onnx_path)
-            print("[AgriSmart ONNX Engine] ONNX Model download complete!")
-        else:
-            raise RuntimeError("Downloaded ONNX model was invalid.")
-
     json_path = locate_models_json()
-    if not (json_path.is_file() and json_path.stat().st_size > 100):
-        json_url = "https://raw.githubusercontent.com/wpzvqrs8/SIH_2026/main/offline/web/models/models.json"
-        print(f"[AgriSmart ONNX Engine] Downloading models.json from {json_url}...")
+
+    if not (onnx_path.is_file() and onnx_path.stat().st_size > 1000000) or not (json_path.is_file() and json_path.stat().st_size > 100):
+        print(f"[AgriSmart ONNX Engine] Downloading model release zip from {ZIP_URL}...")
+        onnx_path.parent.mkdir(parents=True, exist_ok=True)
         json_path.parent.mkdir(parents=True, exist_ok=True)
-        req = urllib.request.Request(json_url, headers={"User-Agent": "Mozilla/5.0"})
-        with urllib.request.urlopen(req) as resp, open(json_path, "wb") as out:
-            out.write(resp.read())
+
+        req = urllib.request.Request(ZIP_URL, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req) as resp:
+            zip_bytes = io.BytesIO(resp.read())
+            with zipfile.ZipFile(zip_bytes) as z:
+                for name in z.namelist():
+                    if name.endswith("india_v1.onnx"):
+                        with z.open(name) as src, open(onnx_path, "wb") as dst:
+                            dst.write(src.read())
+                    elif name.endswith("models.json"):
+                        with z.open(name) as src, open(json_path, "wb") as dst:
+                            dst.write(src.read())
+        print("[AgriSmart ONNX Engine] Extracted india_v1.onnx and models.json successfully!")
 
     with open(json_path, "r", encoding="utf-8") as f:
         meta_data = json.load(f)
