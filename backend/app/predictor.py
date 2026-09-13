@@ -27,8 +27,13 @@ def locate_weights() -> Path:
     # Fallback to local backend folder model.pt
     return Path(__file__).resolve().parent.parent / "model.pt"
 
-@lru_cache(maxsize=1)
+_LOADED_MODEL_CACHE = None
+
 def load_model(weights_path: Optional[str] = None):
+    global _LOADED_MODEL_CACHE
+    if _LOADED_MODEL_CACHE is not None:
+        return _LOADED_MODEL_CACHE
+
     p = Path(weights_path) if weights_path else locate_weights()
     if not p.exists():
         url = "https://github.com/wpzvqrs8/SIH_2026/releases/download/india-model-v1/model.pt"
@@ -75,7 +80,8 @@ def load_model(weights_path: Optional[str] = None):
                 crop = "general"
             crop_classes.setdefault(crop, []).append(idx)
 
-    return model, tf, labels, crop_classes, backbone, img_size
+    _LOADED_MODEL_CACHE = (model, tf, labels, crop_classes, backbone, img_size)
+    return _LOADED_MODEL_CACHE
 
 def process_image(image_input: Union[Image.Image, bytes, str]) -> Image.Image:
     if isinstance(image_input, Image.Image):
