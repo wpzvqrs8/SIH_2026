@@ -17,11 +17,11 @@ REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 def locate_weights() -> Path:
     candidates = [
         Path(__file__).resolve().parent.parent / "model.pt",
-        REPO_ROOT / "model" / "model.pt",
         Path("model.pt"),
+        REPO_ROOT / "model" / "model.pt",
     ]
     for candidate in candidates:
-        if candidate.exists():
+        if candidate.is_file() and candidate.stat().st_size > 1000000:
             return candidate.resolve()
     import tempfile
     return Path(tempfile.gettempdir()) / "agris_model.pt"
@@ -34,9 +34,9 @@ def load_model(weights_path: Optional[str] = None):
         return _LOADED_MODEL_CACHE
 
     p = Path(weights_path) if weights_path else locate_weights()
-    if not p.exists():
+    if not (p.is_file() and p.stat().st_size > 1000000):
         url = "https://github.com/wpzvqrs8/SIH_2026/releases/download/india-model-v1/model.pt"
-        print(f"[AgriSmart Predictor] Model file missing at {p}. Downloading from {url}...")
+        print(f"[AgriSmart Predictor] Model file missing or invalid at {p}. Downloading from {url}...")
         p.parent.mkdir(parents=True, exist_ok=True)
         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
         with urllib.request.urlopen(req) as response, open(p, "wb") as out_file:
