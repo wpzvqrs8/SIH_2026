@@ -33,7 +33,11 @@ WEIGHTS_PATH = locate_weights()
 def load_model(weights_path: str = str(WEIGHTS_PATH)):
     p = Path(weights_path)
     if not p.exists():
-        raise FileNotFoundError(f"Model weights file not found at {p}")
+        url = "https://github.com/wpzvqrs8/SIH_2026/releases/download/india-model-v1/model.pt"
+        print(f"[AgriSmart Predictor] Model file missing at {p}. Downloading from {url}...")
+        p.parent.mkdir(parents=True, exist_ok=True)
+        urllib.request.urlretrieve(url, p)
+        print("[AgriSmart Predictor] Model weights download complete!")
 
     try:
         pkg = torch.load(p, map_location="cpu", weights_only=True)
