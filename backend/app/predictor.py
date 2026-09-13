@@ -18,14 +18,13 @@ def locate_weights() -> Path:
     candidates = [
         Path(__file__).resolve().parent.parent / "model.pt",
         REPO_ROOT / "model" / "model.pt",
-        REPO_ROOT / "model" / "india" / "model.pt",
         Path("model.pt"),
     ]
     for candidate in candidates:
         if candidate.exists():
             return candidate.resolve()
-    # Fallback to local backend folder model.pt
-    return Path(__file__).resolve().parent.parent / "model.pt"
+    import tempfile
+    return Path(tempfile.gettempdir()) / "agris_model.pt"
 
 _LOADED_MODEL_CACHE = None
 
@@ -39,7 +38,10 @@ def load_model(weights_path: Optional[str] = None):
         url = "https://github.com/wpzvqrs8/SIH_2026/releases/download/india-model-v1/model.pt"
         print(f"[AgriSmart Predictor] Model file missing at {p}. Downloading from {url}...")
         p.parent.mkdir(parents=True, exist_ok=True)
-        urllib.request.urlretrieve(url, p)
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req) as response, open(p, "wb") as out_file:
+            while chunk := response.read(1024 * 1024):
+                out_file.write(chunk)
         print("[AgriSmart Predictor] Model weights download complete!")
 
     try:
