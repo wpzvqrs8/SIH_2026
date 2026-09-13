@@ -24,8 +24,8 @@ def locate_weights() -> Path:
     for candidate in candidates:
         if candidate.exists():
             return candidate.resolve()
-    # Fallback to default expected path
-    return REPO_ROOT / "model" / "model.pt"
+    # Fallback to local backend folder model.pt
+    return Path(__file__).resolve().parent.parent / "model.pt"
 
 WEIGHTS_PATH = locate_weights()
 
