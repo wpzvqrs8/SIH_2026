@@ -15,14 +15,14 @@ from app.treatments import get_treatment_info
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 
 def locate_weights() -> Path:
-    candidates = [
-        Path(__file__).resolve().parent.parent / "model.pt",
-        Path("model.pt"),
-        REPO_ROOT / "model" / "model.pt",
-    ]
-    for candidate in candidates:
-        if candidate.is_file() and candidate.stat().st_size > 1000000:
-            return candidate.resolve()
+    local_backend = Path(__file__).resolve().parent.parent / "model.pt"
+    if local_backend.is_file() and local_backend.stat().st_size > 1000000:
+        return local_backend.resolve()
+        
+    cwd_model = Path("model.pt").resolve()
+    if cwd_model.is_file() and cwd_model.stat().st_size > 1000000:
+        return cwd_model
+
     import tempfile
     return Path(tempfile.gettempdir()) / "agris_model.pt"
 
@@ -36,13 +36,20 @@ def load_model(weights_path: Optional[str] = None):
     p = Path(weights_path) if weights_path else locate_weights()
     if not (p.is_file() and p.stat().st_size > 1000000):
         url = "https://github.com/wpzvqrs8/SIH_2026/releases/download/india-model-v1/model.pt"
-        print(f"[AgriSmart Predictor] Model file missing or invalid at {p}. Downloading from {url}...")
+        print(f"[AgriSmart Predictor] Model file missing at {p}. Downloading from {url}...")
         p.parent.mkdir(parents=True, exist_ok=True)
+        tmp_download = p.with_suffix(".tmp")
         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-        with urllib.request.urlopen(req) as response, open(p, "wb") as out_file:
+        with urllib.request.urlopen(req) as response, open(tmp_download, "wb") as out_file:
             while chunk := response.read(1024 * 1024):
                 out_file.write(chunk)
-        print("[AgriSmart Predictor] Model weights download complete!")
+        if tmp_download.exists() and tmp_download.stat().st_size > 1000000:
+            if p.exists():
+                p.unlink()
+            tmp_download.rename(p)
+            print("[AgriSmart Predictor] Model weights download complete!")
+        else:
+            raise RuntimeError(f"Downloaded model weights from {url} were incomplete or invalid.")
 
     try:
         pkg = torch.load(p, map_location="cpu", weights_only=True)
