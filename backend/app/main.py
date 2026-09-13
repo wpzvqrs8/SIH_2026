@@ -53,11 +53,13 @@ def health_check():
             "weights_location": str(locate_weights())
         }
     except Exception as e:
+        import traceback
         return {
             "status": "degraded",
             "service": "AgriSmart AI API",
             "model_ready": False,
-            "error": str(e)
+            "error": str(e),
+            "traceback": traceback.format_exc()
         }
 
 @app.get("/crops", tags=["Catalog"])
