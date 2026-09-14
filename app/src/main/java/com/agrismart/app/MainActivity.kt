@@ -107,6 +107,9 @@ class MainActivity : AppCompatActivity() {
     lateinit var modelDownloader: ModelDownloader
 
     @Inject
+    lateinit var fakeApi: com.agrismart.app.data.api.FakeAgriSmartApi
+
+    @Inject
     lateinit var cropRepository: CropRepository
 
     @Inject
@@ -124,6 +127,7 @@ class MainActivity : AppCompatActivity() {
             AgriSmartTheme {
                 AgriSmartAppContent(
                     apiConfig = apiConfig,
+                    fakeApi = fakeApi,
                     modelDownloader = modelDownloader,
                     cropRepository = cropRepository,
                     predictionRepository = predictionRepository,
@@ -154,6 +158,7 @@ class MainActivity : AppCompatActivity() {
 @Composable
 fun AgriSmartAppContent(
     apiConfig: ApiConfig,
+    fakeApi: com.agrismart.app.data.api.FakeAgriSmartApi,
     modelDownloader: ModelDownloader,
     cropRepository: CropRepository,
     predictionRepository: PredictionRepository,
@@ -307,13 +312,16 @@ fun AgriSmartAppContent(
         ) { innerPadding ->
             NavHost(
                 navController = navController,
-                startDestination = "language",
+                startDestination = if (apiConfig.hasSelectedLanguage) "home" else "language",
                 modifier = Modifier.padding(innerPadding)
             ) {
                 composable("language") {
                     LanguageScreen(
                         onLanguageSelected = { tag ->
-                            navController.navigate("model_download")
+                            apiConfig.hasSelectedLanguage = true
+                            navController.navigate("home") {
+                                popUpTo("language") { inclusive = true }
+                            }
                         }
                     )
                 }
@@ -388,9 +396,7 @@ fun AgriSmartAppContent(
                         predictionRepository = predictionRepository,
                         onPredictionComplete = { result ->
                             currentResult = result
-                            navController.navigate("result") {
-                                popUpTo("choose_plant") { inclusive = true }
-                            }
+                            navController.navigate("result")
                         }
                     )
                 }
@@ -399,7 +405,7 @@ fun AgriSmartAppContent(
                     currentResult?.let { res ->
                         ResultScreen(
                             result = res,
-                            onCheckAnotherClick = { navController.navigate("choose_plant") }
+                            onCheckAnotherClick = { navController.navigate("home") }
                         )
                     }
                 }
@@ -414,7 +420,9 @@ fun AgriSmartAppContent(
                 composable("settings") {
                     SettingsScreen(
                         onLanguageClick = { navController.navigate("language") },
-                        apiConfig = apiConfig
+                        apiConfig = apiConfig,
+                        fakeApi = fakeApi,
+                        modelDownloader = modelDownloader
                     )
                 }
 

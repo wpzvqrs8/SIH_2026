@@ -41,6 +41,18 @@ class ApiConfig @Inject constructor(
             prefs.edit().putBoolean("enable_online_search", value).apply()
         }
 
+    var hasSelectedLanguage: Boolean
+        get() = prefs.getBoolean("has_selected_language_v1", false)
+        set(value) {
+            prefs.edit().putBoolean("has_selected_language_v1", value).apply()
+        }
+
+    var useOfflineModel: Boolean
+        get() = prefs.getBoolean("use_offline_model", false)
+        set(value) {
+            prefs.edit().putBoolean("use_offline_model", value).apply()
+        }
+
     val isConfigured: Boolean
         get() = serverUrl.isNotBlank()
 

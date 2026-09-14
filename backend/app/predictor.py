@@ -9,7 +9,12 @@ import numpy as np
 import onnxruntime as ort
 from PIL import Image
 
-from app.treatments import get_treatment_info
+try:
+    from app.treatments import get_treatment_info
+except ModuleNotFoundError:
+    from backend.app.treatments import get_treatment_info
+
+
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 BACKEND_DIR = Path(__file__).resolve().parent.parent

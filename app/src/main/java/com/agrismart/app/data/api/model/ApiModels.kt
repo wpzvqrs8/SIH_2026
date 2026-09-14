@@ -11,7 +11,7 @@ data class HealthResponse(
 
 @Serializable
 data class CropsResponse(
-    val version: String,
+    val version: String = "1.0",
     val crops: List<CropDto>
 )
 

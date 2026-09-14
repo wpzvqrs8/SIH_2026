@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgriSmart AI - Plant Disease Testing System</title>
+  <meta name="description" content="Instant AI plant disease diagnosis, crop health detection, and agricultural treatment recommendations using lightweight ONNX vision engine.">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌿</text></svg>">
+</head>
+<body>
+
+  <!-- Header Bar -->
+  <header class="app-header">
+    <div class="header-container">
+      <a href="#" class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 2L9.5 8.5L3 11L9.5 13.5L12 20L14.5 13.5L21 11L14.5 8.5L12 2Z"></path>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>AgriSmart AI</h1>
+          <p>Plant Disease Testing & Health Diagnostics</p>
+        </div>
+      </a>
+
+      <div class="header-badge">
+        <span class="status-dot"></span>
+        <span id="apiStatusText">AI Backend Online</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-wrapper">
+
+    <!-- Hero Title -->
+    <div class="hero-banner">
+      <h2>Plant Health Scanner</h2>
+      <p>Capture or upload a leaf photo to receive real-time disease diagnosis & treatment guide.</p>
+    </div>
+
+    <!-- Testing Grid Layout -->
+    <div class="testing-grid">
+
+      <!-- Input Panel -->
+      <section class="card" id="inputCard">
+        <h3 class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+            <circle cx="12" cy="13" r="3" />
+          </svg>
+          Select Photo Input Mode
+        </h3>
+
+        <!-- Mode Toggle Tabs -->
+        <div class="mode-tabs">
+          <button type="button" class="tab-btn active" id="tabCamera" onclick="switchMode('camera')">
+            <svg viewBox="0 0 24 24">
+              <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+            </svg>
+            Direct Camera
+          </button>
+          <button type="button" class="tab-btn" id="tabStorage" onclick="switchMode('storage')">
+            <svg viewBox="0 0 24 24">
+              <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            File / Local Storage
+          </button>
+        </div>
+
+        <!-- Crop Filter Selection -->
+        <div class="crop-select-wrapper">
+          <label for="cropSelect">Filter by Crop (Optional):</label>
+          <select id="cropSelect" class="select-box">
+            <option value="">Auto-Detect All Crops (38 Classes)</option>
+          </select>
+        </div>
+
+        <!-- Camera Viewport Section -->
+        <div id="cameraSection">
+          <div class="viewport-wrapper">
+            <video id="cameraVideo" autoplay playsinline muted></video>
+            <img id="capturedPreview" style="display: none;" alt="Captured preview">
+            <div class="shutter-flash" id="shutterFlash"></div>
+            <div class="camera-overlay" id="cameraOverlay"></div>
+          </div>
+
+          <div class="controls-bar">
+            <button type="button" class="btn btn-primary" id="captureBtn" onclick="captureCameraPhoto()">
+              📸 Take Direct Photo
+            </button>
+            <button type="button" class="btn btn-secondary" id="flipCameraBtn" onclick="toggleCameraFacing()" style="width: auto;">
+              🔄 Flip
+            </button>
+          </div>
+        </div>
+
+        <!-- Local Storage / File Upload Section -->
+        <div id="storageSection" style="display: none;">
+          <div class="viewport-wrapper" id="dropzone" onclick="triggerFileInput()">
+            <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFileSelect(event)">
+            <img id="filePreview" style="display: none;" alt="File preview">
+            
+            <div class="dropzone-content" id="dropzoneContent">
+              <div class="dropzone-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+              </div>
+              <p class="dropzone-title">Click or Drag Image Here</p>
+              <p class="dropzone-sub">Supports JPG, PNG, WEBP (Local Storage or Disk)</p>
+              <button type="button" class="btn btn-secondary" style="margin: 0 auto; width: auto; font-size: 0.85rem; padding: 0.4rem 1rem;">
+                Browse Files
+              </button>
+            </div>
+          </div>
+
+          <div class="controls-bar" style="margin-top: 1rem;">
+            <button type="button" class="btn btn-primary" id="analyzeStorageBtn" onclick="analyzeCurrentImage()" disabled>
+              🔍 Analyze Uploaded Image
+            </button>
+          </div>
+
+          <!-- Sample & LocalStorage Presets -->
+          <div class="presets-section">
+            <p class="presets-title">Sample LocalStorage Images</p>
+            <div class="presets-grid" id="presetsGrid">
+              <!-- Dynamically populated sample images -->
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Results Display Panel -->
+      <section class="card results-card" id="resultsCard" style="position: relative;">
+        
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+          <div class="spinner"></div>
+          <p class="loading-text">Analyzing Leaf Sample...</p>
+          <p class="loading-subtext">Executing ONNX CPU Neural Model</p>
+        </div>
+
+        <!-- Initial Placeholder State -->
+        <div class="placeholder-result" id="placeholderResult">
+          <div class="placeholder-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3>No Image Analyzed Yet</h3>
+          <p>Take a photo with your camera or select an image from local storage to run plant disease detection.</p>
+        </div>
+
+        <!-- Dynamic Diagnosis Results -->
+        <div class="diagnosis-container" id="diagnosisContent" style="display: none;">
+          
+          <!-- Diagnosis Header -->
+          <div class="diag-header">
+            <div class="diag-title-group">
+              <span id="cropNameLabel" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;"></span>
+              <h3 id="diseaseTitle">--</h3>
+            </div>
+            <div class="status-badge" id="statusBadge">--</div>
+          </div>
+
+          <!-- Confidence & Action Bar -->
+          <div class="confidence-box">
+            <div class="conf-meta">
+              <span>Detection Confidence</span>
+              <span id="confidencePercent">0%</span>
+            </div>
+            <div class="meter-track">
+              <div class="meter-fill" id="meterFill"></div>
+            </div>
+
+            <div class="action-toolbar" style="margin-top: 1rem;">
+              <button type="button" class="icon-btn" id="ttsBtn" onclick="toggleVoiceSpeech()">
+                🔊 <span id="ttsBtnText">Read Diagnosis Aloud</span>
+              </button>
+              <button type="button" class="icon-btn" onclick="saveScanToLocalStorage()">
+                💾 Save to Local Storage
+              </button>
+            </div>
+          </div>
+
+          <!-- Symptoms & Treatment Guide -->
+          <div class="treatment-section" id="treatmentSection">
+            <h4>🌿 Recommended Treatment & Care Guide</h4>
+            
+            <div style="margin-bottom: 0.75rem;" id="causeBlock">
+              <p style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600;">Diagnosis Context:</p>
+              <p id="causeText" style="font-size: 0.9rem; color: var(--text-primary); margin-top: 0.2rem;"></p>
+            </div>
+
+            <p style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.4rem;">Actionable Steps:</p>
+            <ul class="treatment-list" id="treatmentList">
+              <!-- Populated via JS -->
+            </ul>
+          </div>
+
+          <!-- Alternative Candidates -->
+          <div class="treatment-section">
+            <h4 style="color: var(--text-secondary);">📊 Alternative Candidate Predictions</h4>
+            <div class="top-preds" id="topPredsList">
+              <!-- Populated via JS -->
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- Toast Notification Message -->
+  <div class="toast-msg" id="toastMsg"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

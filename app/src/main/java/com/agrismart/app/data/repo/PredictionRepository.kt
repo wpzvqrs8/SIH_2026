@@ -4,6 +4,7 @@ import com.agrismart.app.data.api.FakeAgriSmartApi
 import com.agrismart.app.domain.model.PredictionResult
 import com.agrismart.app.domain.model.ResultStatus
 import com.agrismart.app.domain.model.TestRecord
+import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -17,8 +18,14 @@ class PredictionRepository @Inject constructor(
         TestRecord("3", "corn", "Corn", "Not sure", ResultStatus.UNCERTAIN, " Sep 09, 2:00 PM")
     )
 
-    suspend fun getPrediction(cropId: String): PredictionResult {
-        val dto = fakeApi.predict(cropId)
+    suspend fun isApiValid(): Boolean = fakeApi.isApiValid()
+
+    suspend fun getPrediction(
+        cropId: String,
+        imageFile: File? = null,
+        imageUrl: String? = null
+    ): PredictionResult {
+        val dto = fakeApi.predict(cropId, imageFile, imageUrl)
         val status = when (dto.status) {
             "disease" -> ResultStatus.DISEASE
             "healthy" -> ResultStatus.HEALTHY

@@ -1,10 +1,16 @@
-"""AgriSmart AI FastAPI Main Service Application."""
+from pathlib import Path
 from typing import Optional
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, HttpUrl
 
-from app.predictor import get_crops_catalog, load_session, predict
+try:
+    from app.predictor import get_crops_catalog, load_session, predict
+except ModuleNotFoundError:
+    from backend.app.predictor import get_crops_catalog, load_session, predict
+
+
 
 app = FastAPI(
     title="AgriSmart AI Disease Recognition API",
@@ -23,6 +29,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Mount webapp static directory and sample image assets
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+WEBAPP_DIR = REPO_ROOT / "webapp"
+SAMPLES_DIR = REPO_ROOT / "samples"
+
+if SAMPLES_DIR.exists():
+    app.mount("/samples", StaticFiles(directory=str(SAMPLES_DIR)), name="samples")
+
+
 class PredictUrlRequest(BaseModel):
     url: str
     crop: Optional[str] = None
@@ -37,9 +52,9 @@ def startup_event():
     except Exception as e:
         print(f"[AgriSmart API] Warning: Failed to pre-warm ONNX model on boot: {e}")
 
-@app.get("/", tags=["Health"])
 @app.get("/health", tags=["Health"])
 def health_check():
+
     """Verify backend API status and model readiness."""
     try:
         session, meta = load_session()
@@ -120,6 +135,11 @@ def predict_url(payload: PredictUrlRequest):
             detail=f"URL prediction failed: {str(e)}"
         )
 
+# Mount web application static files at root
+if WEBAPP_DIR.exists():
+    app.mount("/", StaticFiles(directory=str(WEBAPP_DIR), html=True), name="webapp")
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+
