@@ -1,7 +1,9 @@
+"""AgriSmart AI FastAPI Main Service Application."""
 from pathlib import Path
 from typing import Optional
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, HttpUrl
 
@@ -9,7 +11,6 @@ try:
     from app.predictor import get_crops_catalog, load_session, predict
 except ModuleNotFoundError:
     from backend.app.predictor import get_crops_catalog, load_session, predict
-
 
 
 app = FastAPI(
@@ -29,14 +30,41 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount webapp static directory and sample image assets
-REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-WEBAPP_DIR = REPO_ROOT / "webapp"
-SAMPLES_DIR = REPO_ROOT / "samples"
+# Locate Directories (Robust multi-candidate resolution)
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+REPO_ROOT = BACKEND_DIR.parent
 
-if SAMPLES_DIR.exists():
+def locate_webapp_dir() -> Path:
+    candidates = [
+        REPO_ROOT / "webapp",
+        BACKEND_DIR / "webapp",
+        Path("webapp"),
+        Path.cwd() / "webapp",
+    ]
+    for c in candidates:
+        if c.is_dir() and (c / "index.html").is_file():
+            print(f"[AgriSmart API] Found webapp directory at: {c.resolve()}")
+            return c.resolve()
+    print(f"[AgriSmart API] Warning: webapp directory not found in candidates, defaulting to {REPO_ROOT / 'webapp'}")
+    return (REPO_ROOT / "webapp").resolve()
+
+def locate_samples_dir() -> Path:
+    candidates = [
+        REPO_ROOT / "samples",
+        BACKEND_DIR / "samples",
+        Path("samples"),
+        Path.cwd() / "samples",
+    ]
+    for c in candidates:
+        if c.is_dir():
+            return c.resolve()
+    return (REPO_ROOT / "samples").resolve()
+
+WEBAPP_DIR = locate_webapp_dir()
+SAMPLES_DIR = locate_samples_dir()
+
+if SAMPLES_DIR.is_dir():
     app.mount("/samples", StaticFiles(directory=str(SAMPLES_DIR)), name="samples")
-
 
 class PredictUrlRequest(BaseModel):
     url: str
@@ -54,7 +82,6 @@ def startup_event():
 
 @app.get("/health", tags=["Health"])
 def health_check():
-
     """Verify backend API status and model readiness."""
     try:
         session, meta = load_session()
@@ -135,11 +162,26 @@ def predict_url(payload: PredictUrlRequest):
             detail=f"URL prediction failed: {str(e)}"
         )
 
-# Mount web application static files at root
-if WEBAPP_DIR.exists():
-    app.mount("/", StaticFiles(directory=str(WEBAPP_DIR), html=True), name="webapp")
+# Web Application Frontend Routes
+@app.get("/", tags=["Frontend"])
+async def serve_frontend_index():
+    """Serve Plant Disease Testing Web App homepage."""
+    index_file = WEBAPP_DIR / "index.html"
+    if index_file.is_file():
+        return FileResponse(index_file)
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"Plant Disease Testing WebApp index.html not found at {index_file}"
+    )
+
+@app.get("/{file_path:path}", include_in_schema=False)
+async def serve_webapp_static_file(file_path: str):
+    """Serve static webapp files (styles.css, app.js, icons, etc)."""
+    target = (WEBAPP_DIR / file_path).resolve()
+    if target.is_file() and str(target).startswith(str(WEBAPP_DIR)):
+        return FileResponse(target)
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not Found")
 
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
-
