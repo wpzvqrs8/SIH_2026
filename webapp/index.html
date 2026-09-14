@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
   <title>AgriSmart AI - Plant Disease Testing System</title>
   <meta name="description" content="Instant AI plant disease diagnosis, crop health detection, and agricultural treatment recommendations using lightweight ONNX vision engine.">
   <link rel="stylesheet" href="styles.css">
@@ -43,7 +43,7 @@
 
         <div class="header-badge">
           <span class="status-dot"></span>
-          <span id="apiStatusText" data-i18n="backend_online">AI Backend Online</span>
+          <span id="apiStatusText" data-i18n="backend_online">AI Online</span>
         </div>
       </div>
     </div>
@@ -98,6 +98,12 @@
         <!-- Camera Viewport Section -->
         <div id="cameraSection">
           <div class="viewport-wrapper">
+            <!-- Viewport Loader Overlay -->
+            <div class="viewport-loader" id="cameraLoader" style="display: none;">
+              <div class="spinner" style="width: 32px; height: 32px;"></div>
+              <span data-i18n="cam_connecting">Connecting camera...</span>
+            </div>
+            
             <video id="cameraVideo" autoplay playsinline muted></video>
             <img id="capturedPreview" style="display: none;" alt="Captured preview">
             <div class="shutter-flash" id="shutterFlash"></div>
@@ -117,6 +123,12 @@
         <!-- Local Storage / File Upload Section -->
         <div id="storageSection" style="display: none;">
           <div class="viewport-wrapper" id="dropzone" onclick="triggerFileInput()">
+            <!-- File Loader Overlay -->
+            <div class="viewport-loader" id="fileLoader" style="display: none;">
+              <div class="spinner" style="width: 32px; height: 32px;"></div>
+              <span data-i18n="file_loading">Processing image...</span>
+            </div>
+
             <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFileSelect(event)">
             <img id="filePreview" style="display: none;" alt="File preview">
             
@@ -134,7 +146,7 @@
             </div>
           </div>
 
-          <div class="controls-bar" style="margin-top: 1rem;">
+          <div class="controls-bar" style="margin-top: 0.85rem;">
             <button type="button" class="btn btn-primary" id="analyzeStorageBtn" onclick="analyzeCurrentImage()" disabled>
               🔍 <span data-i18n="btn_analyze">Analyze Uploaded Image</span>
             </button>
@@ -146,11 +158,11 @@
       <!-- Results Display Panel -->
       <section class="card results-card" id="resultsCard" style="position: relative;">
         
-        <!-- Loading Overlay -->
+        <!-- Loading Overlay with Multi-Step Progress -->
         <div class="loading-overlay" id="loadingOverlay" style="display: none;">
           <div class="spinner"></div>
-          <p class="loading-text" data-i18n="loading_title">Analyzing Leaf Sample...</p>
-          <p class="loading-subtext" data-i18n="loading_sub">Executing ONNX CPU Neural Model</p>
+          <p class="loading-text" id="loadingStepTitle" data-i18n="loading_title">Analyzing Leaf Sample...</p>
+          <p class="loading-subtext" id="loadingStepSub" data-i18n="loading_sub">Executing ONNX CPU Neural Model</p>
         </div>
 
         <!-- Initial Placeholder State -->
@@ -186,7 +198,7 @@
               <div class="meter-fill" id="meterFill"></div>
             </div>
 
-            <div class="action-toolbar" style="margin-top: 1rem;">
+            <div class="action-toolbar" style="margin-top: 0.75rem;">
               <button type="button" class="icon-btn" id="ttsBtn" onclick="toggleVoiceSpeech()">
                 🔊 <span id="ttsBtnText" data-i18n="btn_read_aloud">Read Diagnosis Aloud</span>
               </button>
@@ -200,12 +212,12 @@
           <div class="treatment-section" id="treatmentSection">
             <h4 data-i18n="treatment_header">🌿 Recommended Treatment & Care Guide</h4>
             
-            <div style="margin-bottom: 0.75rem;" id="causeBlock">
-              <p style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600;" data-i18n="diag_context_label">Diagnosis Context:</p>
-              <p id="causeText" style="font-size: 0.9rem; color: var(--text-primary); margin-top: 0.2rem;"></p>
+            <div style="margin-bottom: 0.65rem;" id="causeBlock">
+              <p style="font-size: 0.82rem; color: var(--text-secondary); font-weight: 600;" data-i18n="diag_context_label">Diagnosis Context:</p>
+              <p id="causeText" style="font-size: 0.88rem; color: var(--text-primary); margin-top: 0.2rem;"></p>
             </div>
 
-            <p style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.4rem;" data-i18n="actionable_steps_label">Actionable Steps:</p>
+            <p style="font-size: 0.82rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 0.35rem;" data-i18n="actionable_steps_label">Actionable Steps:</p>
             <ul class="treatment-list" id="treatmentList">
               <!-- Populated via JS -->
             </ul>

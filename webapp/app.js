@@ -6,7 +6,7 @@
 const TRANSLATIONS = {
   en: {
     brand_sub: "Plant Disease Testing & Health Diagnostics",
-    backend_online: "AI Backend Online",
+    backend_online: "AI Online",
     hero_title: "Plant Health Scanner",
     hero_subtitle: "Capture or upload a leaf photo to receive real-time disease diagnosis & treatment guide.",
     input_title: "Select Photo Input Mode",
@@ -16,6 +16,8 @@ const TRANSLATIONS = {
     auto_detect_all: "Auto-Detect All Crops (38 Classes)",
     btn_take_photo: "Take Direct Photo",
     btn_flip: "Flip",
+    cam_connecting: "Connecting camera...",
+    file_loading: "Processing image...",
     dropzone_title: "Click or Drag Image Here",
     dropzone_sub: "Supports JPG, PNG, WEBP (Local Storage or Disk)",
     btn_browse_files: "Browse Files",
@@ -37,7 +39,7 @@ const TRANSLATIONS = {
   },
   hi: {
     brand_sub: "पौधों के रोग की जांच और स्वास्थ्य निदान",
-    backend_online: "एआई बैकएंड ऑनलाइन",
+    backend_online: "एआई ऑनलाइन",
     hero_title: "पौधा स्वास्थ्य स्कैनर",
     hero_subtitle: "वास्तविक समय में बीमारी के निदान और उपचार गाइड प्राप्त करने के लिए पत्ती की फोटो लें या अपलोड करें।",
     input_title: "फोटो इनपुट मोड चुनें",
@@ -47,6 +49,8 @@ const TRANSLATIONS = {
     auto_detect_all: "सभी फसलों का स्वतः पता लगाएं (38 श्रेणियां)",
     btn_take_photo: "सीधे फोटो लें",
     btn_flip: "कैमरा बदलें",
+    cam_connecting: "कैमरा कनेक्ट हो रहा है...",
+    file_loading: "इमेज प्रोसेस हो रही है...",
     dropzone_title: "यहाँ इमेज क्लिक करें या ड्रैग करें",
     dropzone_sub: "JPG, PNG, WEBP सपोर्टेड",
     btn_browse_files: "फ़ाइलें खोजें",
@@ -78,6 +82,8 @@ const TRANSLATIONS = {
     auto_detect_all: "सर्व पिकांचा शोध घ्या",
     btn_take_photo: "थेट फोटो घ्या",
     btn_flip: "कॅमेरा बदला",
+    cam_connecting: "कॅमेरा जोडत आहे...",
+    file_loading: "फोटो प्रक्रियेत आहे...",
     dropzone_title: "इथे फोटो क्लिक करा किंवा ड्रॅग करा",
     dropzone_sub: "JPG, PNG, WEBP सपोर्टेड",
     btn_browse_files: "फाइल्स निवडा",
@@ -109,6 +115,8 @@ const TRANSLATIONS = {
     auto_detect_all: "அனைத்து பயிர்களையும் தானாகக் கண்டறிக",
     btn_take_photo: "நேரடி புகைப்படம் எடுக்கவும்",
     btn_flip: "கேமராவை மாற்று",
+    cam_connecting: "கேமரா இணைக்கிறது...",
+    file_loading: "படம் செயலாக்கப்படுகிறது...",
     dropzone_title: "படத்தை கிளிக் செய்யவும் அல்லது இழுக்கவும்",
     dropzone_sub: "JPG, PNG, WEBP ஆதரிக்கப்படுகிறது",
     btn_browse_files: "கோப்புகளை உலாவு",
@@ -140,6 +148,8 @@ const TRANSLATIONS = {
     auto_detect_all: "అన్ని పంటలను గుర్తించండి",
     btn_take_photo: "నేరుగా ఫోటో తీయండి",
     btn_flip: "కెమెరా మార్చు",
+    cam_connecting: "కెమెరా కనెక్ట్ అవుతోంది...",
+    file_loading: "చిత్రం ప్రాసెస్ చేయబడుతోంది...",
     dropzone_title: "ఫోటోను క్లిక్ చేయండి లేదా డ్రాగ్ చేయండి",
     dropzone_sub: "JPG, PNG, WEBP సపోర్ట్ చేస్తుంది",
     btn_browse_files: "ఫైళ్లను ఎంచుకోండి",
@@ -171,6 +181,8 @@ const TRANSLATIONS = {
     auto_detect_all: "તમામ પાક ઓટો-ડિટેક્ટ કરો",
     btn_take_photo: "ડાયરેક્ટ ફોટો લો",
     btn_flip: "કેમેરા બદલો",
+    cam_connecting: "કેમેરા કનેક્ટ થઈ રહ્યો છે...",
+    file_loading: "ઈમેજ પ્રોસેસ થઈ રહી છે...",
     dropzone_title: "અહીં ફોટો ક્લિક કરો અથવા ડ્રેગ કરો",
     dropzone_sub: "JPG, PNG, WEBP સપોર્ટેડ",
     btn_browse_files: "ફાઇલો બ્રાઉઝ કરો",
@@ -202,6 +214,8 @@ const TRANSLATIONS = {
     auto_detect_all: "সকল ফসল সনাক্ত করুন",
     btn_take_photo: "ছবি তুলুন",
     btn_flip: "ক্যামেরা পরিবর্তন করুন",
+    cam_connecting: "ক্যামেরা যুক্ত হচ্ছে...",
+    file_loading: "ছবি প্রসেস হচ্ছে...",
     dropzone_title: "ছবি নির্বাচন করুন বা ড্র্যাগ করুন",
     dropzone_sub: "JPG, PNG, WEBP সমর্থিত",
     btn_browse_files: "ফাইল ব্রাউজ করুন",
@@ -233,6 +247,8 @@ const TRANSLATIONS = {
     auto_detect_all: "ಎಲ್ಲಾ ಬೆಳೆಗಳನ್ನು ಪತ್ತೆ ಮಾಡಿ",
     btn_take_photo: "ನೇರ ಫೋಟೋ ತೆಗೆಯಿರಿ",
     btn_flip: "ಕ್ಯಾಮೆರಾ ಬದಲಾಯಿಸಿ",
+    cam_connecting: "ಕ್ಯಾಮೆರಾ ಸಂಪರ್ಕಗೊಳ್ಳುತ್ತಿದೆ...",
+    file_loading: "ಚಿತ್ರ ಪ್ರಕ್ರಿಯೆಯಲ್ಲಿದೆ...",
     dropzone_title: "ಚಿತ್ರವನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ ಅಥವಾ ಡ್ರಾಗ್ ಮಾಡಿ",
     dropzone_sub: "JPG, PNG, WEBP ಬೆಂಬಲಿತವಾಗಿದೆ",
     btn_browse_files: "ಫೈಲ್‌ಗಳನ್ನು ಆಯ್ಕೆ ಮಾಡಿ",
@@ -288,7 +304,6 @@ function changeLanguage(langKey) {
     }
   });
 
-  // Re-render status badge if active prediction exists
   if (currentPredictionResult) {
     renderDiagnosisResult(currentPredictionResult);
   }
@@ -345,18 +360,19 @@ function switchMode(mode) {
 }
 
 /**
- * Camera Stream Management using WebRTC
+ * Camera Stream Management using WebRTC with Connecting Loader
  */
 async function startCamera() {
   stopCamera();
   const video = document.getElementById('cameraVideo');
   const preview = document.getElementById('capturedPreview');
   const overlay = document.getElementById('cameraOverlay');
-  const captureBtn = document.getElementById('captureBtn');
+  const cameraLoader = document.getElementById('cameraLoader');
 
   video.style.display = 'block';
   preview.style.display = 'none';
   overlay.style.display = 'flex';
+  cameraLoader.style.display = 'flex';
 
   try {
     mediaStream = await navigator.mediaDevices.getUserMedia({
@@ -364,9 +380,15 @@ async function startCamera() {
       audio: false
     });
     video.srcObject = mediaStream;
-    document.getElementById('apiStatusText').textContent = TRANSLATIONS[currentLang].backend_online || 'AI Backend Online';
+    
+    video.onloadeddata = () => {
+      cameraLoader.style.display = 'none';
+    };
+
+    document.getElementById('apiStatusText').textContent = TRANSLATIONS[currentLang].backend_online || 'AI Online';
   } catch (err) {
     console.error('[AgriSmart UI] Camera access error:', err);
+    cameraLoader.style.display = 'none';
     showToast('Camera access unavailable. Switched to File Upload.');
     switchMode('storage');
   }
@@ -418,13 +440,13 @@ function captureCameraPhoto() {
     overlay.style.display = 'none';
     stopCamera();
 
-    // Directly trigger backend analysis
+    // Trigger backend analysis
     analyzeCurrentImage();
   }, 'image/jpeg', 0.92);
 }
 
 /**
- * Drag and Drop & Local File Selection
+ * Drag and Drop & Local File Selection with File Loader
  */
 function initDragAndDrop() {
   const dropzone = document.getElementById('dropzone');
@@ -469,6 +491,9 @@ function processFile(file) {
     return;
   }
 
+  const fileLoader = document.getElementById('fileLoader');
+  fileLoader.style.display = 'flex';
+
   currentImageBlob = file;
   const reader = new FileReader();
   reader.onload = (e) => {
@@ -480,12 +505,13 @@ function processFile(file) {
     preview.style.display = 'block';
     dropContent.style.display = 'none';
     analyzeBtn.disabled = false;
+    fileLoader.style.display = 'none';
   };
   reader.readAsDataURL(file);
 }
 
 /**
- * Send Image to FastAPI Backend `/predict/image`
+ * Send Image to FastAPI Backend `/predict/image` with Multi-Stage Progress Loader
  */
 async function analyzeCurrentImage() {
   if (!currentImageBlob) {
@@ -494,7 +520,12 @@ async function analyzeCurrentImage() {
   }
 
   const loadingOverlay = document.getElementById('loadingOverlay');
+  const loadingStepTitle = document.getElementById('loadingStepTitle');
+  const loadingStepSub = document.getElementById('loadingStepSub');
+  
   loadingOverlay.style.display = 'flex';
+  loadingStepTitle.textContent = TRANSLATIONS[currentLang].loading_title || "Analyzing Leaf Sample...";
+  loadingStepSub.textContent = "1/3 Resizing & normalizing leaf pixels...";
 
   const selectedCrop = document.getElementById('cropSelect').value;
   const formData = new FormData();
@@ -503,6 +534,12 @@ async function analyzeCurrentImage() {
     formData.append('crop', selectedCrop);
   }
   formData.append('top_k', 5);
+
+  setTimeout(() => {
+    if (loadingOverlay.style.display === 'flex') {
+      loadingStepSub.textContent = "2/3 Executing ONNX CPU Neural Engine...";
+    }
+  }, 400);
 
   try {
     const resp = await fetch(`${API_BASE}/predict/image`, {
@@ -515,9 +552,15 @@ async function analyzeCurrentImage() {
       throw new Error(errJson.detail || `Server returned ${resp.status}`);
     }
 
+    loadingStepSub.textContent = "3/3 Fetching agronomic treatment advisory...";
+
     const result = await resp.json();
     currentPredictionResult = result;
-    renderDiagnosisResult(result);
+    
+    setTimeout(() => {
+      renderDiagnosisResult(result);
+    }, 200);
+
   } catch (err) {
     console.error('[AgriSmart UI] Prediction error:', err);
     showToast(`Analysis failed: ${err.message}`);
@@ -656,7 +699,6 @@ function toggleVoiceSpeech() {
   const utterance = new SpeechSynthesisUtterance(textToRead);
   utterance.rate = 0.95;
   
-  // Set voice language matching selector if available
   const langCodeMap = { en: 'en-US', hi: 'hi-IN', mr: 'mr-IN', ta: 'ta-IN', te: 'te-IN', gu: 'gu-IN', bn: 'bn-IN', kn: 'kn-IN' };
   utterance.lang = langCodeMap[currentLang] || 'en-US';
 
