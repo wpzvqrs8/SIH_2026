@@ -30,35 +30,39 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Locate Directories (Robust multi-candidate resolution)
-BACKEND_DIR = Path(__file__).resolve().parent.parent
-REPO_ROOT = BACKEND_DIR.parent
-
 def locate_webapp_dir() -> Path:
-    candidates = [
-        REPO_ROOT / "webapp",
-        BACKEND_DIR / "webapp",
-        Path("webapp"),
-        Path.cwd() / "webapp",
-    ]
-    for c in candidates:
-        if c.is_dir() and (c / "index.html").is_file():
-            print(f"[AgriSmart API] Found webapp directory at: {c.resolve()}")
-            return c.resolve()
-    print(f"[AgriSmart API] Warning: webapp directory not found in candidates, defaulting to {REPO_ROOT / 'webapp'}")
-    return (REPO_ROOT / "webapp").resolve()
+    """Robust resolution to locate webapp/index.html across local and container environments."""
+    this_file = Path(__file__).resolve()
+    
+    # 1. Search parent directories
+    for parent in [this_file.parent, this_file.parent.parent, this_file.parent.parent.parent, Path.cwd()]:
+        candidate = parent / "webapp"
+        if candidate.is_dir() and (candidate / "index.html").is_file():
+            print(f"[AgriSmart API] Found webapp directory at: {candidate.resolve()}")
+            return candidate.resolve()
+    
+    # 2. Glob search across project tree
+    for parent in [this_file.parent.parent.parent, Path.cwd()]:
+        try:
+            for child in parent.glob("**/webapp/index.html"):
+                if child.is_file():
+                    print(f"[AgriSmart API] Found webapp directory via glob at: {child.parent.resolve()}")
+                    return child.parent.resolve()
+        except Exception:
+            pass
+
+    # 3. Fallback
+    fallback = this_file.parent.parent.parent / "webapp"
+    print(f"[AgriSmart API] Using default webapp path: {fallback}")
+    return fallback
 
 def locate_samples_dir() -> Path:
-    candidates = [
-        REPO_ROOT / "samples",
-        BACKEND_DIR / "samples",
-        Path("samples"),
-        Path.cwd() / "samples",
-    ]
-    for c in candidates:
-        if c.is_dir():
-            return c.resolve()
-    return (REPO_ROOT / "samples").resolve()
+    this_file = Path(__file__).resolve()
+    for parent in [this_file.parent, this_file.parent.parent, this_file.parent.parent.parent, Path.cwd()]:
+        candidate = parent / "samples"
+        if candidate.is_dir():
+            return candidate.resolve()
+    return (this_file.parent.parent.parent / "samples").resolve()
 
 WEBAPP_DIR = locate_webapp_dir()
 SAMPLES_DIR = locate_samples_dir()
@@ -166,7 +170,8 @@ def predict_url(payload: PredictUrlRequest):
 @app.get("/", tags=["Frontend"])
 async def serve_frontend_index():
     """Serve Plant Disease Testing Web App homepage."""
-    index_file = WEBAPP_DIR / "index.html"
+    target_dir = locate_webapp_dir()
+    index_file = target_dir / "index.html"
     if index_file.is_file():
         return FileResponse(index_file)
     raise HTTPException(
@@ -177,8 +182,9 @@ async def serve_frontend_index():
 @app.get("/{file_path:path}", include_in_schema=False)
 async def serve_webapp_static_file(file_path: str):
     """Serve static webapp files (styles.css, app.js, icons, etc)."""
-    target = (WEBAPP_DIR / file_path).resolve()
-    if target.is_file() and str(target).startswith(str(WEBAPP_DIR)):
+    target_dir = locate_webapp_dir()
+    target = (target_dir / file_path).resolve()
+    if target.is_file() and str(target).startswith(str(target_dir)):
         return FileResponse(target)
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not Found")
 
