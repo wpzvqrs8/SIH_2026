@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Optional
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, HttpUrl
 
@@ -34,15 +34,20 @@ def locate_webapp_dir() -> Path:
     """Robust resolution to locate webapp/index.html across local and container environments."""
     this_file = Path(__file__).resolve()
     
-    # 1. Search parent directories
-    for parent in [this_file.parent, this_file.parent.parent, this_file.parent.parent.parent, Path.cwd()]:
-        candidate = parent / "webapp"
-        if candidate.is_dir() and (candidate / "index.html").is_file():
-            print(f"[AgriSmart API] Found webapp directory at: {candidate.resolve()}")
-            return candidate.resolve()
+    # 1. Direct candidates (backend/webapp first, then root/webapp)
+    candidates = [
+        this_file.parent.parent / "webapp",        # backend/webapp
+        this_file.parent.parent.parent / "webapp", # root/webapp
+        Path.cwd() / "webapp",
+        Path.cwd() / "backend" / "webapp",
+    ]
+    for c in candidates:
+        if c.is_dir() and (c / "index.html").is_file():
+            print(f"[AgriSmart API] Found webapp directory at: {c.resolve()}")
+            return c.resolve()
     
     # 2. Glob search across project tree
-    for parent in [this_file.parent.parent.parent, Path.cwd()]:
+    for parent in [this_file.parent.parent.parent, this_file.parent.parent, Path.cwd()]:
         try:
             for child in parent.glob("**/webapp/index.html"):
                 if child.is_file():
@@ -52,16 +57,21 @@ def locate_webapp_dir() -> Path:
             pass
 
     # 3. Fallback
-    fallback = this_file.parent.parent.parent / "webapp"
+    fallback = this_file.parent.parent / "webapp"
     print(f"[AgriSmart API] Using default webapp path: {fallback}")
     return fallback
 
 def locate_samples_dir() -> Path:
     this_file = Path(__file__).resolve()
-    for parent in [this_file.parent, this_file.parent.parent, this_file.parent.parent.parent, Path.cwd()]:
-        candidate = parent / "samples"
-        if candidate.is_dir():
-            return candidate.resolve()
+    candidates = [
+        this_file.parent.parent / "samples",
+        this_file.parent.parent.parent / "samples",
+        Path.cwd() / "samples",
+        Path.cwd() / "backend" / "samples",
+    ]
+    for c in candidates:
+        if c.is_dir():
+            return c.resolve()
     return (this_file.parent.parent.parent / "samples").resolve()
 
 WEBAPP_DIR = locate_webapp_dir()
@@ -174,6 +184,12 @@ async def serve_frontend_index():
     index_file = target_dir / "index.html"
     if index_file.is_file():
         return FileResponse(index_file)
+    
+    # Secondary check in root webapp
+    root_index = Path.cwd() / "webapp" / "index.html"
+    if root_index.is_file():
+        return FileResponse(root_index)
+
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
         detail=f"Plant Disease Testing WebApp index.html not found at {index_file}"
@@ -186,6 +202,12 @@ async def serve_webapp_static_file(file_path: str):
     target = (target_dir / file_path).resolve()
     if target.is_file() and str(target).startswith(str(target_dir)):
         return FileResponse(target)
+    
+    # Fallback to root webapp
+    root_target = (Path.cwd() / "webapp" / file_path).resolve()
+    if root_target.is_file():
+        return FileResponse(root_target)
+
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not Found")
 
 if __name__ == "__main__":
