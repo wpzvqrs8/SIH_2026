@@ -42,7 +42,7 @@ For comparison, a PlantVillage-only ResNet-50 scores 0.285 macro-F1 on PlantDoc
 ([PMC13236948](https://pmc.ncbi.nlm.nih.gov/articles/PMC13236948/)). The organizers' hidden field set is the real test;
 its baseline and the final class list are published at kickoff.
 
-![Field confusion matrix](confusion_matrix/core_v2/confusion_field.png)
+![Field confusion matrix](report/figures/confusion_field.png)
 
 Full details: [report/model_report.md](report/model_report.md) · every run: [report/experiments.md](report/experiments.md).
 
@@ -53,7 +53,7 @@ photos (near-copies of training photos left out) and the right crop for **98.3%*
 **74.7%** exact and **86.6%** right crop. The released model, **v1** (12 Sep, 224 px), scores about the same
 (92.9% exact, 98.3% right crop) and stays the default in the apps.
 
-![India v2 crop confusion matrix](confusion_matrix/india_v2/india_v2_confusion_crops.png)
+![India v2 crop confusion matrix](report/figures/india_v2_confusion_crops.png)
 
 More for v2: [field photos only](confusion_matrix/india_v2/india_v2_confusion_crops_field.png) ·
 [all 387 classes](confusion_matrix/india_v2/india_v2_confusion_full.png) ·
