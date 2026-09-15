@@ -1,5 +1,7 @@
 # AgriSmart AI
 
+WEBSITE = https://sih-2026-u4kv.onrender.com/
+
 **SIH 2026 internal hackathon · L. J. Institute of Engineering and Technology · Problem Statement 1: AgriSmart AI**
 
 Vatsal Kadiya's copy of the team repository [wpzvqrs8/SIH_2026](https://github.com/wpzvqrs8/SIH_2026), with its full
@@ -195,6 +197,10 @@ from an AI coding assistant (Claude Code), which the rules allow. No public note
 We reuse these open-source libraries and pretrained weights: PyTorch, torchvision, timm, DINOv2 (Meta AI, Apache-2.0),
 scikit-learn, pandas, imagehash and the Hugging Face Hub client. Datasets are credited above.
 
-## Team
-
-_Add team members here._
+## Team:
+Bhavy Patel(leader)
+Kadiya Vatsal
+Kalani Yash
+Doshi krisha
+Gandhi kanishka
+Parmar Shubham
